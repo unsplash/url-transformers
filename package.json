@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "format": "prettier --write './**/*.{ts,js,json,md}' '.prettierrc'"
+  },
+  "dependencies": {
+    "@types/lodash": "^4.14.111",
+    "@types/node": "^10.5.2",
+    "lodash": "^4.17.10"
+  },
+  "devDependencies": {
+    "prettier": "^1.14.2",
+    "typescript": "^2.9.2"
+  }
+}

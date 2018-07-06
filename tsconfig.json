@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es2015",
+        "strict": true,
+        "noImplicitReturns": true,
+        "sourceMap": true,
+        "outDir": "./target/",
+        "rootDir": "./src/",
+        "declaration": true
+    },
+    "files": ["./src/index.ts", "./src/tests.ts"]
+}

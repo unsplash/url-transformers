@@ -1,0 +1,26 @@
+{
+    "editor.rulers": [
+        100 // Enforced by Prettier
+    ],
+
+    // We use the language service plugin for this
+    "tslint.enable": false,
+
+    "[typescript]": {
+        "editor.formatOnSave": true
+    },
+    "[javascript]": {
+        "editor.formatOnSave": true
+    },
+    "[json]": {
+        "editor.formatOnSave": true
+    },
+    "[jsonc]": {
+        "editor.formatOnSave": true
+    },
+    "[markdown]": {
+        "editor.formatOnSave": true
+    },
+
+    "typescript.tsdk": "node_modules/typescript/lib"
+}
