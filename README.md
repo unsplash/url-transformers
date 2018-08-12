@@ -8,6 +8,8 @@ npm install url-transformers
 ```
 
 ```sh
+yarn
+
 npm run test
 
 npm run prepublishOnly && npm version patch && npm publish && git push && git push --tags
