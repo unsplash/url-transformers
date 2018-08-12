@@ -9,6 +9,8 @@ npm install url-transformers
 
 ```sh
 npm run test
+
+npm run prepublishOnly && npm version patch && npm publish && git push && git push --tags
 ```
 
 [tests]: ./src/tests.ts
