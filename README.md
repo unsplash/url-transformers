@@ -7,7 +7,7 @@ yarn add url-transformers
 npm install url-transformers
 ```
 
-```
+```sh
 npm run test
 ```
 
