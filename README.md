@@ -1,3 +1,3 @@
 ```
-trash ./target/ && tsc && node ./target/tests.js
+npm run test
 ```

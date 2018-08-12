@@ -1,5 +1,7 @@
 {
   "scripts": {
+    "compile": "trash ./target/ && tsc",
+    "test": "npm run compile && node ./target/tests.js",
     "format": "prettier --write './**/*.{ts,js,json,md}' '.prettierrc'"
   },
   "dependencies": {
