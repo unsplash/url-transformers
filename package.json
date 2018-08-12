@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "compile": "trash ./target/ && tsc",
+    "compile": "rm -rf ./target/ && tsc",
     "test": "npm run compile && node ./target/tests.js",
     "format": "prettier --write './**/*.{ts,js,json,md}' '.prettierrc'"
   },
