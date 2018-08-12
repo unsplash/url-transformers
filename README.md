@@ -15,4 +15,9 @@ npm run test
 npm run prepublishOnly && npm version patch && npm publish && git push && git push --tags
 ```
 
+TODO:
+
+-   Remove Lodash dep
+-   TSLint
+
 [tests]: ./src/tests.ts
