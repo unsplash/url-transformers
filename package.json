@@ -17,9 +17,7 @@
     "target"
   ],
   "dependencies": {
-    "@types/lodash": "^4.14.111",
-    "@types/node": "^10.5.2",
-    "lodash": "^4.17.10"
+    "@types/node": "^10.5.2"
   },
   "devDependencies": {
     "prettier": "^1.14.2",

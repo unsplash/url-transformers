@@ -17,7 +17,6 @@ npm run prepublishOnly && npm version patch && npm publish && git push && git pu
 
 TODO:
 
--   Remove Lodash dep
 -   TSLint
 
 [tests]: ./src/tests.ts

@@ -1,8 +1,9 @@
+import { pipe } from './helpers/pipe';
 import * as urlHelpers from 'url';
 import { UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { mapMaybe, getOrElseMaybe } from './helpers/maybe';
 import { isNonEmptyString, flipCurried } from './helpers/other';
-import pipe = require('lodash/flow');
+
 import { ParsedUrlQuery } from 'querystring';
 
 const getPathnameFromParts = (parts: string[]) => `/${parts.map(encodeURIComponent).join('/')}`;
@@ -74,7 +75,7 @@ const replacePathInParsedUrl = ({ newPath }: { newPath: string }) => ({
     pipe(
         () => parsePath(newPath),
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
-    )();
+    )({});
 
 export const replacePathInUrl = flipCurried(
     pipe(
@@ -91,7 +92,7 @@ const appendPathnameToParsedUrl = ({ pathnameToAppend }: { pathnameToAppend: str
     const pathnameParts = pipe(
         () => mapMaybe(parsedUrl.pathname, getPartsFromPathname),
         maybe => getOrElseMaybe(maybe, () => []),
-    )();
+    )({});
     const pathnamePartsToAppend = getPartsFromPathname(pathnameToAppend);
     const newPathnameParts = [...pathnameParts, ...pathnamePartsToAppend];
     const newPathname = getPathnameFromParts(newPathnameParts);
