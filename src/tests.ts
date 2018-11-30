@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { addQueryToUrl, replacePathInUrl, appendPathnameToUrl, replaceHashInUrl } from './index';
+import { addQueryToUrl, appendPathnameToUrl, replaceHashInUrl, replacePathInUrl } from './index';
 
 assert.strictEqual(
     addQueryToUrl({ url: 'http://foo.com/' })({ queryToAppend: { a: 'b' } }),

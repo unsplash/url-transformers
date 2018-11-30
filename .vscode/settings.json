@@ -6,6 +6,10 @@
     // We use the language service plugin for this
     "tslint.enable": false,
 
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+
     "[typescript]": {
         "editor.formatOnSave": true
     },

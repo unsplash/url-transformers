@@ -1,10 +1,9 @@
-import { pipe } from './helpers/pipe';
+import { ParsedUrlQuery } from 'querystring';
 import * as urlHelpers from 'url';
 import { UrlWithParsedQuery, UrlWithStringQuery } from 'url';
-import { mapMaybe, getOrElseMaybe } from './helpers/maybe';
-import { isNonEmptyString, flipCurried } from './helpers/other';
-
-import { ParsedUrlQuery } from 'querystring';
+import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
+import { flipCurried, isNonEmptyString } from './helpers/other';
+import { pipe } from './helpers/pipe';
 
 const getPathnameFromParts = (parts: string[]) => `/${parts.map(encodeURIComponent).join('/')}`;
 
