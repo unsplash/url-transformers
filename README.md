@@ -15,8 +15,4 @@ npm run test
 npm run prepublishOnly && npm version patch && npm publish && git push && git push --tags
 ```
 
-TODO:
-
--   TSLint
-
 [tests]: ./src/tests.ts
