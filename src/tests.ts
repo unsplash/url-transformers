@@ -1,5 +1,11 @@
 import * as assert from 'assert';
-import { addQueryToUrl, appendPathnameToUrl, replaceHashInUrl, replacePathInUrl } from './index';
+import {
+    addQueryToUrl,
+    appendPathnameToUrl,
+    replaceHashInUrl,
+    replacePathInUrl,
+    replacePathnameInUrl,
+} from './index';
 
 assert.strictEqual(
     addQueryToUrl({ url: 'http://foo.com/' })({ queryToAppend: { a: 'b' } }),
@@ -21,6 +27,15 @@ assert.strictEqual(
 assert.strictEqual(
     replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: '/bar' }),
     'https://foo.com/bar',
+);
+
+assert.strictEqual(
+    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: '/bar' }),
+    'https://foo.com/bar',
+);
+assert.strictEqual(
+    replacePathnameInUrl({ url: 'https://foo.com/foo?example' })({ newPathname: '/bar' }),
+    'https://foo.com/bar?example',
 );
 
 assert.strictEqual(appendPathnameToUrl({ url: '/foo' })({ pathnameToAppend: '/bar' }), '/foo/bar');

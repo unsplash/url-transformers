@@ -83,6 +83,19 @@ export const replacePathInUrl = flipCurried(
     ),
 );
 
+const replacePathnameInParsedUrl = ({ newPathname }: { newPathname: string }) => ({
+    parsedUrl,
+}: {
+    parsedUrl: UrlWithStringQuery;
+}) => ({ ...parsedUrl, pathname: newPathname });
+
+export const replacePathnameInUrl = flipCurried(
+    pipe(
+        replacePathnameInParsedUrl,
+        mapUrl,
+    ),
+);
+
 const appendPathnameToParsedUrl = ({ pathnameToAppend }: { pathnameToAppend: string }) => ({
     parsedUrl,
 }: {
