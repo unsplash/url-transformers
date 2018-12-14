@@ -17,8 +17,8 @@ Currently we don't have documentation, however the code is strongly typed using 
 ## Installation
 
 ```sh
-yarn add `url-transformers`
-npm install `url-transformers`
+yarn add url-transformers
+npm install url-transformers
 ```
 
 ## Development
