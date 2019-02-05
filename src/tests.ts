@@ -43,6 +43,10 @@ assert.strictEqual(
     appendPathnameToUrl({ url: '/foo?example' })({ pathnameToAppend: '/bar' }),
     '/foo/bar?example',
 );
+assert.strictEqual(
+    appendPathnameToUrl({ url: '/@foo' })({ pathnameToAppend: '/bar' }),
+    '/@foo/bar',
+);
 
 assert.strictEqual(replaceHashInUrl({ url: '/foo' })({ newHash: '#bar' }), '/foo#bar');
 assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: undefined }), '/foo');
