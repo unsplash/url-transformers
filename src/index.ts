@@ -5,13 +5,9 @@ import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { flipCurried, isNonEmptyString } from './helpers/other';
 import { pipe } from './helpers/pipe';
 
-const getPathnameFromParts = (parts: string[]) => `/${parts.map(encodeURIComponent).join('/')}`;
+const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
 
-const getPartsFromPathname = (pathname: string) =>
-    pathname
-        .split('/')
-        .filter(isNonEmptyString)
-        .map(decodeURIComponent);
+const getPartsFromPathname = (pathname: string) => pathname.split('/').filter(isNonEmptyString);
 
 const parseUrlWithQueryString = (url: string): UrlWithParsedQuery =>
     urlHelpers.parse(
