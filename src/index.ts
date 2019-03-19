@@ -31,6 +31,8 @@ const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
         urlHelpers.format,
     );
 
+// Note: if/when this PR is merged, this type will be available via the Node types.
+// https://github.com/DefinitelyTyped/DefinitelyTyped/pull/33997
 type ParsedUrlQueryInput = { [key: string]: unknown };
 const addQueryToParsedUrl = ({
     queryToAppend,
