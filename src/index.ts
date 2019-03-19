@@ -16,7 +16,8 @@ const parseUrlWithQueryString = (url: string) =>
         true,
     );
 
-const mapUrl = (fn: ({ parsedUrl }: { parsedUrl: UrlWithStringQuery }) => UrlWithStringQuery) =>
+type MapUrlFn = ({ parsedUrl }: { parsedUrl: UrlWithStringQuery }) => UrlWithStringQuery;
+const mapUrl = (fn: MapUrlFn) =>
     pipe(
         ({ url }: { url: string }) => urlHelpers.parse(url),
         parsedUrl => fn({ parsedUrl }),
@@ -63,11 +64,7 @@ const parsePath = pipe(
     ({ search, pathname }) => ({ search, pathname }),
 );
 
-const replacePathInParsedUrl = ({ newPath }: { newPath: string }) => ({
-    parsedUrl,
-}: {
-    parsedUrl: UrlWithStringQuery;
-}) =>
+const replacePathInParsedUrl = ({ newPath }: { newPath: string }): MapUrlFn => ({ parsedUrl }) =>
     pipe(
         () => parsePath(newPath),
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
@@ -80,10 +77,8 @@ export const replacePathInUrl = flipCurried(
     ),
 );
 
-const replacePathnameInParsedUrl = ({ newPathname }: { newPathname: string }) => ({
+const replacePathnameInParsedUrl = ({ newPathname }: { newPathname: string }): MapUrlFn => ({
     parsedUrl,
-}: {
-    parsedUrl: UrlWithStringQuery;
 }) => ({ ...parsedUrl, pathname: newPathname });
 
 export const replacePathnameInUrl = flipCurried(
@@ -93,11 +88,11 @@ export const replacePathnameInUrl = flipCurried(
     ),
 );
 
-const appendPathnameToParsedUrl = ({ pathnameToAppend }: { pathnameToAppend: string }) => ({
-    parsedUrl,
+const appendPathnameToParsedUrl = ({
+    pathnameToAppend,
 }: {
-    parsedUrl: UrlWithStringQuery;
-}) => {
+    pathnameToAppend: string;
+}): MapUrlFn => ({ parsedUrl }) => {
     const pathnameParts = pipe(
         () => mapMaybe(parsedUrl.pathname, getPartsFromPathname),
         maybe => getOrElseMaybe(maybe, () => []),
@@ -115,10 +110,8 @@ export const appendPathnameToUrl = flipCurried(
     ),
 );
 
-const replaceHashInParsedUrl = ({ newHash }: { newHash: string | undefined }) => ({
+const replaceHashInParsedUrl = ({ newHash }: { newHash: string | undefined }): MapUrlFn => ({
     parsedUrl,
-}: {
-    parsedUrl: UrlWithStringQuery;
 }) => ({
     ...parsedUrl,
     hash: newHash,
