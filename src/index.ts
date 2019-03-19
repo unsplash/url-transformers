@@ -9,7 +9,7 @@ const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
 
 const getPartsFromPathname = (pathname: string) => pathname.split('/').filter(isNonEmptyString);
 
-const parseUrlWithQueryString = (url: string): UrlWithParsedQuery =>
+const parseUrlWithQueryString = (url: string) =>
     urlHelpers.parse(
         url,
         // Parse the query string
