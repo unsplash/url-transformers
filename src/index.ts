@@ -1,6 +1,6 @@
 import { ParsedUrlQuery } from 'querystring';
 import * as urlHelpers from 'url';
-import { UrlWithParsedQuery, UrlWithStringQuery } from 'url';
+import { UrlObject, UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { flipCurried, isNonEmptyString } from './helpers/other';
 import { pipe } from './helpers/pipe';
@@ -16,7 +16,7 @@ const parseUrlWithQueryString = (url: string) =>
         true,
     );
 
-type MapUrlFn = ({ parsedUrl }: { parsedUrl: UrlWithStringQuery }) => UrlWithStringQuery;
+type MapUrlFn = ({ parsedUrl }: { parsedUrl: UrlWithStringQuery }) => UrlObject;
 const mapUrl = (fn: MapUrlFn) =>
     pipe(
         ({ url }: { url: string }) => urlHelpers.parse(url),
@@ -24,9 +24,7 @@ const mapUrl = (fn: MapUrlFn) =>
         urlHelpers.format,
     );
 
-type MapUrlWithParsedQueryFn = (
-    { parsedUrl }: { parsedUrl: UrlWithParsedQuery },
-) => UrlWithParsedQuery;
+type MapUrlWithParsedQueryFn = ({ parsedUrl }: { parsedUrl: UrlWithParsedQuery }) => UrlObject;
 const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
     pipe(
         ({ url }: { url: string }) => parseUrlWithQueryString(url),
