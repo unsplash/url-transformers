@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/unsplash/url-transformers.git"
   },
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
     "compile": "rm -rf ./target/ && tsc",
     "test": "npm run compile && node ./target/tests.js",
