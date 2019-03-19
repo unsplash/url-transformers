@@ -1,4 +1,3 @@
-import { ParsedUrlQuery } from 'querystring';
 import * as urlHelpers from 'url';
 import { UrlObject, UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
@@ -32,10 +31,11 @@ const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
         urlHelpers.format,
     );
 
+type ParsedUrlQueryInput = { [key: string]: unknown };
 const addQueryToParsedUrl = ({
     queryToAppend,
 }: {
-    queryToAppend: ParsedUrlQuery;
+    queryToAppend: ParsedUrlQueryInput;
 }): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
     const { auth, protocol, host, hash, pathname, query: existingQuery } = parsedUrl;
     const newQuery = { ...existingQuery, ...queryToAppend };

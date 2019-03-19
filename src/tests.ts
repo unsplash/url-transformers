@@ -8,8 +8,8 @@ import {
 } from './index';
 
 assert.strictEqual(
-    addQueryToUrl({ url: 'http://foo.com/' })({ queryToAppend: { a: 'b' } }),
-    'http://foo.com/?a=b',
+    addQueryToUrl({ url: 'http://foo.com/' })({ queryToAppend: { a: 'b', number: 1 } }),
+    'http://foo.com/?a=b&number=1',
 );
 assert.strictEqual(
     addQueryToUrl({ url: 'http://foo:bar@baz.com/' })({
