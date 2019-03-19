@@ -8,8 +8,15 @@ import {
 } from './index';
 
 assert.strictEqual(
-    addQueryToUrl({ url: 'http://foo.com/' })({ queryToAppend: { a: 'b', number: 1 } }),
-    'http://foo.com/?a=b&number=1',
+    addQueryToUrl({ url: 'http://foo.com/' })({
+        queryToAppend: {
+            string: 'string',
+            number: 1,
+            boolean: true,
+            strings: ['string1', 'string2'],
+        },
+    }),
+    'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
 );
 assert.strictEqual(
     addQueryToUrl({ url: 'http://foo:bar@baz.com/' })({
