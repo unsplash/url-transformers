@@ -23,20 +23,21 @@ const mapUrl = (fn: ({ parsedUrl }: { parsedUrl: UrlWithStringQuery }) => UrlWit
         urlHelpers.format,
     );
 
-const mapUrlWithParsedQuery = (
-    fn: ({ parsedUrl }: { parsedUrl: UrlWithParsedQuery }) => UrlWithParsedQuery,
-) =>
+type MapUrlWithParsedQueryFn = (
+    { parsedUrl }: { parsedUrl: UrlWithParsedQuery },
+) => UrlWithParsedQuery;
+const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
     pipe(
         ({ url }: { url: string }) => parseUrlWithQueryString(url),
         parsedUrl => fn({ parsedUrl }),
         urlHelpers.format,
     );
 
-const addQueryToParsedUrl = ({ queryToAppend }: { queryToAppend: ParsedUrlQuery }) => ({
-    parsedUrl,
+const addQueryToParsedUrl = ({
+    queryToAppend,
 }: {
-    parsedUrl: UrlWithParsedQuery;
-}): UrlWithParsedQuery => {
+    queryToAppend: ParsedUrlQuery;
+}): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
     const { auth, protocol, host, hash, pathname, query: existingQuery } = parsedUrl;
     const newQuery = { ...existingQuery, ...queryToAppend };
     const newParsedUrl = {
