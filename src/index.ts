@@ -59,6 +59,30 @@ export const addQueryToUrl = flipCurried(
     ),
 );
 
+const replaceQueryInParsedUrl = ({
+    newQuery,
+}: {
+    newQuery: ParsedUrlQueryInput;
+}): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
+    const { auth, protocol, host, hash, pathname } = parsedUrl;
+    const newParsedUrl = {
+        auth,
+        protocol,
+        host,
+        hash,
+        pathname,
+        query: newQuery,
+    };
+    return newParsedUrl;
+};
+
+export const replaceQueryInUrl = flipCurried(
+    pipe(
+        replaceQueryInParsedUrl,
+        mapUrlWithParsedQuery,
+    ),
+);
+
 const parsePath = pipe(
     urlHelpers.parse,
     ({ search, pathname }) => ({ search, pathname }),
