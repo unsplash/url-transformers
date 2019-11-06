@@ -41,7 +41,7 @@ const addQueryToParsedUrl = ({
 }): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
     const { auth, protocol, host, hash, pathname, query: existingQuery } = parsedUrl;
     const newQuery = { ...existingQuery, ...queryToAppend };
-    const newParsedUrl = {
+    return {
         auth,
         protocol,
         host,
@@ -49,7 +49,6 @@ const addQueryToParsedUrl = ({
         pathname,
         query: newQuery,
     };
-    return newParsedUrl;
 };
 
 export const addQueryToUrl = flipCurried(
@@ -65,7 +64,7 @@ const replaceQueryInParsedUrl = ({
     newQuery: ParsedUrlQueryInput;
 }): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
     const { auth, protocol, host, hash, pathname } = parsedUrl;
-    const newParsedUrl = {
+    return {
         auth,
         protocol,
         host,
@@ -73,7 +72,6 @@ const replaceQueryInParsedUrl = ({
         pathname,
         query: newQuery,
     };
-    return newParsedUrl;
 };
 
 export const replaceQueryInUrl = flipCurried(
