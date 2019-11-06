@@ -5,6 +5,7 @@ import {
     replaceHashInUrl,
     replacePathInUrl,
     replacePathnameInUrl,
+    replaceQueryInUrl,
 } from './index';
 
 assert.strictEqual(
@@ -17,6 +18,22 @@ assert.strictEqual(
         },
     }),
     'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
+);
+assert.strictEqual(
+    replaceQueryInUrl({
+        url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
+    })({
+        newQuery: { foo: 1 },
+    }),
+    'http://foo.com/?foo=1',
+);
+assert.strictEqual(
+    replaceQueryInUrl({
+        url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
+    })({
+        newQuery: {},
+    }),
+    'http://foo.com/',
 );
 assert.strictEqual(
     addQueryToUrl({ url: 'http://foo:bar@baz.com/' })({
