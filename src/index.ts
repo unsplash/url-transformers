@@ -35,7 +35,7 @@ const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
 const replaceQueryInParsedUrl = ({
     newQuery,
 }: {
-    newQuery: ParsedUrlQueryInput | ((prev: ParsedUrlQuery) => ParsedUrlQueryInput);
+    newQuery: ParsedUrlQueryInput | ((prevQuery: ParsedUrlQuery) => ParsedUrlQueryInput);
 }): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
     const { auth, protocol, host, hash, pathname, query: prevQuery } = parsedUrl;
     return {
@@ -96,7 +96,7 @@ export const replacePathInUrl = flipCurried(
 const replacePathnameInParsedUrl = ({
     newPathname,
 }: {
-    newPathname: string | undefined | ((prev: string | undefined) => string | undefined);
+    newPathname: string | undefined | ((prevPathname: string | undefined) => string | undefined);
 }): MapUrlFn => ({ parsedUrl }) => ({
     ...parsedUrl,
     pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
