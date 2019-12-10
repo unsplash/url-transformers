@@ -86,11 +86,7 @@ const replacePathInParsedUrl = ({
     pipeWith(
         newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
         maybe => mapMaybe(maybe, parsePath),
-        maybe =>
-            getOrElseMaybe(maybe, () => ({
-                search: undefined,
-                pathname: undefined,
-            })),
+        maybe => getOrElseMaybe(maybe, () => ({ search: undefined, pathname: undefined })),
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
     );
 
