@@ -38,17 +38,11 @@ const replaceQueryInParsedUrl = ({
     newQuery,
 }: {
     newQuery: BinaryUpdate<UrlWithParsedQuery['query'], ParsedUrlQueryInput>;
-}): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
-    const { auth, protocol, host, hash, pathname, query: prevQuery } = parsedUrl;
-    return {
-        auth,
-        protocol,
-        host,
-        hash,
-        pathname,
-        query: newQuery instanceof Function ? newQuery(prevQuery) : newQuery,
-    };
-};
+}): MapUrlWithParsedQueryFn => ({ parsedUrl }) => ({
+    ...parsedUrl,
+    search: undefined,
+    query: newQuery instanceof Function ? newQuery(parsedUrl.query) : newQuery,
+});
 
 export const replaceQueryInUrl = flipCurried(
     pipe(
