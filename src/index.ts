@@ -31,6 +31,29 @@ const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
         urlHelpers.format,
     );
 
+const replaceQueryInParsedUrl = ({
+    newQuery,
+}: {
+    newQuery: ParsedUrlQueryInput;
+}): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
+    const { auth, protocol, host, hash, pathname } = parsedUrl;
+    return {
+        auth,
+        protocol,
+        host,
+        hash,
+        pathname,
+        query: newQuery,
+    };
+};
+
+export const replaceQueryInUrl = flipCurried(
+    pipe(
+        replaceQueryInParsedUrl,
+        mapUrlWithParsedQuery,
+    ),
+);
+
 // Note: if/when this PR is merged, this type will be available via the Node types.
 // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/33997
 type ParsedUrlQueryInput = { [key: string]: unknown };
@@ -54,29 +77,6 @@ const addQueryToParsedUrl = ({
 export const addQueryToUrl = flipCurried(
     pipe(
         addQueryToParsedUrl,
-        mapUrlWithParsedQuery,
-    ),
-);
-
-const replaceQueryInParsedUrl = ({
-    newQuery,
-}: {
-    newQuery: ParsedUrlQueryInput;
-}): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
-    const { auth, protocol, host, hash, pathname } = parsedUrl;
-    return {
-        auth,
-        protocol,
-        host,
-        hash,
-        pathname,
-        query: newQuery,
-    };
-};
-
-export const replaceQueryInUrl = flipCurried(
-    pipe(
-        replaceQueryInParsedUrl,
         mapUrlWithParsedQuery,
     ),
 );
