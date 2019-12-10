@@ -1,9 +1,9 @@
+import { pipe } from 'pipe-ts';
 import { ParsedUrlQuery } from 'querystring';
 import * as urlHelpers from 'url';
 import { UrlObject, UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { flipCurried, isNonEmptyString } from './helpers/other';
-import { pipe } from './helpers/pipe';
 
 const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
 
@@ -75,7 +75,8 @@ export const addQueryToUrl = flipCurried(
 );
 
 const parsePath = pipe(
-    urlHelpers.parse,
+    // We must wrap this because otherwise TS might pick the wrong overload
+    (url: string) => urlHelpers.parse(url),
     ({ search, pathname }) => ({ search, pathname }),
 );
 
@@ -83,7 +84,7 @@ const replacePathInParsedUrl = ({ newPath }: { newPath: string }): MapUrlFn => (
     pipe(
         () => parsePath(newPath),
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
-    )({});
+    )();
 
 export const replacePathInUrl = flipCurried(
     pipe(
@@ -114,7 +115,7 @@ const appendPathnameToParsedUrl = ({ pathnameToAppend }: { pathnameToAppend: str
             const pathnameParts = pipe(
                 () => mapMaybe(prevPathname, getPartsFromPathname),
                 maybe => getOrElseMaybe(maybe, () => []),
-            )({});
+            )();
             const pathnamePartsToAppend = getPartsFromPathname(pathnameToAppend);
             const newPathnameParts = [...pathnameParts, ...pathnamePartsToAppend];
             const newPathname = getPathnameFromParts(newPathnameParts);
