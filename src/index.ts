@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import { Lens } from 'monocle-ts';
 import { pipe, pipeWith } from 'pipe-ts';
 import * as urlHelpers from 'url';
@@ -35,9 +36,16 @@ const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
     );
 
 const queryAndSearchLens = Lens.fromProps<UrlWithParsedQuery>()(['search', 'query']);
+
 const queryLens = queryAndSearchLens.compose(
     new Lens(({ query }) => query, query => () => ({ search: undefined, query })),
 );
+
+// TODO: not a lawful lens!
+const s: Pick<UrlWithParsedQuery, 'search' | 'query'> = { query: { foo: '1' }, search: 'a' };
+// 2. set(get(s))(s) = s
+assert.deepStrictEqual(queryLens.set(queryLens.get(s))(s), s); // error
+
 const queryInputLens = queryLens.compose(
     new Lens(
         query => query as ParsedUrlQueryInput,
