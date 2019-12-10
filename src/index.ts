@@ -1,5 +1,4 @@
 import { pipe } from 'pipe-ts';
-import { ParsedUrlQuery } from 'querystring';
 import * as urlHelpers from 'url';
 import { UrlObject, UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
@@ -38,7 +37,7 @@ const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
 const replaceQueryInParsedUrl = ({
     newQuery,
 }: {
-    newQuery: BinaryUpdate<ParsedUrlQuery, ParsedUrlQueryInput>;
+    newQuery: BinaryUpdate<UrlWithParsedQuery['query'], ParsedUrlQueryInput>;
 }): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
     const { auth, protocol, host, hash, pathname, query: prevQuery } = parsedUrl;
     return {
@@ -86,7 +85,7 @@ const parsePath = pipe(
 const replacePathInParsedUrl = ({
     newPath,
 }: {
-    newPath: Update<string | undefined>;
+    newPath: Update<UrlWithStringQuery['path']>;
 }): MapUrlFn => ({ parsedUrl }) =>
     pipe(
         () =>
@@ -113,7 +112,7 @@ export const replacePathInUrl = flipCurried(
 const replacePathnameInParsedUrl = ({
     newPathname,
 }: {
-    newPathname: Update<string | undefined>;
+    newPathname: Update<UrlWithStringQuery['pathname']>;
 }): MapUrlFn => ({ parsedUrl }) => ({
     ...parsedUrl,
     pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
@@ -150,7 +149,7 @@ export const appendPathnameToUrl = flipCurried(
 const replaceHashInParsedUrl = ({
     newHash,
 }: {
-    newHash: Update<string | undefined>;
+    newHash: Update<UrlWithStringQuery['hash']>;
 }): MapUrlFn => ({ parsedUrl }) => ({
     ...parsedUrl,
     hash: newHash instanceof Function ? newHash(parsedUrl.hash) : newHash,
