@@ -1,4 +1,4 @@
-import { pipe } from 'pipe-ts';
+import { pipe, pipeWith } from 'pipe-ts';
 import * as urlHelpers from 'url';
 import { UrlObject, UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
@@ -87,20 +87,19 @@ const replacePathInParsedUrl = ({
 }: {
     newPath: Update<UrlWithStringQuery['path']>;
 }): MapUrlFn => ({ parsedUrl }) =>
-    pipe(
-        () =>
-            getOrElseMaybe(
-                mapMaybe(
-                    newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
-                    parsePath,
-                ),
-                () => ({
-                    search: undefined,
-                    pathname: undefined,
-                }),
+    pipeWith(
+        getOrElseMaybe(
+            mapMaybe(
+                newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
+                parsePath,
             ),
+            () => ({
+                search: undefined,
+                pathname: undefined,
+            }),
+        ),
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
-    )();
+    );
 
 export const replacePathInUrl = flipCurried(
     pipe(
@@ -128,10 +127,9 @@ export const replacePathnameInUrl = flipCurried(
 const appendPathnameToParsedUrl = ({ pathnameToAppend }: { pathnameToAppend: string }): MapUrlFn =>
     replacePathnameInParsedUrl({
         newPathname: prevPathname => {
-            const pathnameParts = pipe(
-                () => mapMaybe(prevPathname, getPartsFromPathname),
-                maybe => getOrElseMaybe(maybe, () => []),
-            )();
+            const pathnameParts = pipeWith(mapMaybe(prevPathname, getPartsFromPathname), maybe =>
+                getOrElseMaybe(maybe, () => []),
+            );
             const pathnamePartsToAppend = getPartsFromPathname(pathnameToAppend);
             const newPathnameParts = [...pathnameParts, ...pathnamePartsToAppend];
             const newPathname = getPathnameFromParts(newPathnameParts);
