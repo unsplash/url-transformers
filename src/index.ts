@@ -96,7 +96,7 @@ export const replacePathInUrl = flipCurried(
 const replacePathnameInParsedUrl = ({
     newPathname,
 }: {
-    newPathname: string | ((prev: string | undefined) => string);
+    newPathname: string | undefined | ((prev: string | undefined) => string | undefined);
 }): MapUrlFn => ({ parsedUrl }) => ({
     ...parsedUrl,
     pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
