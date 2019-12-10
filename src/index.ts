@@ -72,7 +72,7 @@ export const addQueryToUrl = flipCurried(
 
 const parsePath = pipe(
     // We must wrap this because otherwise TS might pick the wrong overload
-    (url: string) => urlHelpers.parse(url),
+    (path: string) => urlHelpers.parse(path),
     ({ search, pathname }) => ({ search, pathname }),
 );
 
