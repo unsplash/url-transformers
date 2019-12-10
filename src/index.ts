@@ -80,9 +80,15 @@ const parsePath = pipe(
     ({ search, pathname }) => ({ search, pathname }),
 );
 
-const replacePathInParsedUrl = ({ newPath }: { newPath: string }): MapUrlFn => ({ parsedUrl }) =>
+const replacePathInParsedUrl = ({ newPath }: { newPath: string | undefined }): MapUrlFn => ({
+    parsedUrl,
+}) =>
     pipe(
-        () => parsePath(newPath),
+        () =>
+            getOrElseMaybe(mapMaybe(newPath, parsePath), () => ({
+                search: undefined,
+                pathname: undefined,
+            })),
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
     )();
 

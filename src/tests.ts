@@ -52,6 +52,10 @@ assert.strictEqual(
     replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: '/bar' }),
     'https://foo.com/bar',
 );
+assert.strictEqual(
+    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: undefined }),
+    'https://foo.com',
+);
 
 assert.strictEqual(
     replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: '/bar' }),
