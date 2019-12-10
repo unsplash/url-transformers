@@ -5,6 +5,9 @@ import { UrlObject, UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { flipCurried, isNonEmptyString } from './helpers/other';
 
+type Update<T> = T | ((prev: T) => T);
+type BinaryUpdate<A, B> = B | ((prev: A) => B);
+
 const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
 
 const getPartsFromPathname = (pathname: string) => pathname.split('/').filter(isNonEmptyString);
@@ -35,7 +38,7 @@ const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
 const replaceQueryInParsedUrl = ({
     newQuery,
 }: {
-    newQuery: ParsedUrlQueryInput | ((prevQuery: ParsedUrlQuery) => ParsedUrlQueryInput);
+    newQuery: BinaryUpdate<ParsedUrlQuery, ParsedUrlQueryInput>;
 }): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
     const { auth, protocol, host, hash, pathname, query: prevQuery } = parsedUrl;
     return {
@@ -83,7 +86,7 @@ const parsePath = pipe(
 const replacePathInParsedUrl = ({
     newPath,
 }: {
-    newPath: string | undefined | ((prevPath: string | undefined) => string | undefined);
+    newPath: Update<string | undefined>;
 }): MapUrlFn => ({ parsedUrl }) =>
     pipe(
         () =>
@@ -110,7 +113,7 @@ export const replacePathInUrl = flipCurried(
 const replacePathnameInParsedUrl = ({
     newPathname,
 }: {
-    newPathname: string | undefined | ((prevPathname: string | undefined) => string | undefined);
+    newPathname: Update<string | undefined>;
 }): MapUrlFn => ({ parsedUrl }) => ({
     ...parsedUrl,
     pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
@@ -147,7 +150,7 @@ export const appendPathnameToUrl = flipCurried(
 const replaceHashInParsedUrl = ({
     newHash,
 }: {
-    newHash: string | undefined | ((prevHash: string | undefined) => string | undefined);
+    newHash: Update<string | undefined>;
 }): MapUrlFn => ({ parsedUrl }) => ({
     ...parsedUrl,
     hash: newHash instanceof Function ? newHash(parsedUrl.hash) : newHash,
