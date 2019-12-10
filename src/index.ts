@@ -1,11 +1,11 @@
+import { Lens } from 'monocle-ts';
 import { pipe, pipeWith } from 'pipe-ts';
 import * as urlHelpers from 'url';
 import { UrlObject, UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { flipCurried, isNonEmptyString } from './helpers/other';
 
-type Update<T> = T | ((prev: T) => T);
-type BinaryUpdate<A, B> = B | ((prev: A) => B);
+type Update<T> = ((prev: T) => T);
 
 const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
 
@@ -34,15 +34,22 @@ const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
         urlHelpers.format,
     );
 
+const queryAndSearchLens = Lens.fromProps<UrlWithParsedQuery>()(['search', 'query']);
+const queryLens = queryAndSearchLens.compose(
+    new Lens(({ query }) => query, query => () => ({ search: undefined, query })),
+);
+const queryInputLens = queryLens.compose(
+    new Lens(
+        query => query as ParsedUrlQueryInput,
+        query => () => query as UrlWithParsedQuery['query'],
+    ),
+);
+
 const replaceQueryInParsedUrl = ({
     newQuery,
 }: {
-    newQuery: BinaryUpdate<UrlWithParsedQuery['query'], ParsedUrlQueryInput>;
-}): MapUrlWithParsedQueryFn => ({ parsedUrl }) => ({
-    ...parsedUrl,
-    search: undefined,
-    query: newQuery instanceof Function ? newQuery(parsedUrl.query) : newQuery,
-});
+    newQuery: Update<ParsedUrlQueryInput>;
+}): MapUrlWithParsedQueryFn => ({ parsedUrl }) => queryInputLens.modify(newQuery)(parsedUrl);
 
 export const replaceQueryInUrl = flipCurried(
     pipe(
@@ -71,11 +78,12 @@ export const addQueryToUrl = flipCurried(
 );
 
 type ParsedPath = Pick<UrlWithStringQuery, 'search' | 'pathname'>;
+const pathLens = Lens.fromProps<UrlWithStringQuery>()(['search', 'pathname']);
 
 const parsePath = pipe(
     // We must wrap this because otherwise TS might pick the wrong overload
     (path: string) => urlHelpers.parse(path),
-    ({ search, pathname }): ParsedPath => ({ search, pathname }),
+    pathLens.get,
 );
 
 const getParsedPathFromString = (maybePath: UrlWithStringQuery['path']): ParsedPath =>
@@ -85,16 +93,20 @@ const getParsedPathFromString = (maybePath: UrlWithStringQuery['path']): ParsedP
         maybe => getOrElseMaybe(maybe, () => ({ search: undefined, pathname: undefined })),
     );
 
+const pathStringLens = pathLens.compose(
+    new Lens(
+        // TODO: well, get will always return, no?
+        // TODO: return undefined if empty string?
+        (parsedPath): string | undefined => urlHelpers.format(parsedPath),
+        maybePath => () => getParsedPathFromString(maybePath),
+    ),
+);
+
 const replacePathInParsedUrl = ({
     newPath,
 }: {
     newPath: Update<UrlWithStringQuery['path']>;
-}): MapUrlFn => ({ parsedUrl }) =>
-    pipeWith(
-        newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
-        getParsedPathFromString,
-        newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
-    );
+}): MapUrlFn => ({ parsedUrl }) => pathStringLens.modify(newPath)(parsedUrl);
 
 export const replacePathInUrl = flipCurried(
     pipe(
@@ -103,14 +115,15 @@ export const replacePathInUrl = flipCurried(
     ),
 );
 
+const pathnameLens = Lens.fromProp<UrlWithStringQuery>()('pathname');
+
+// TODO: if we remove the named parameters, this would just become
+// const replacePathnameInParsedUrl = pathnameLens.modify;
 const replacePathnameInParsedUrl = ({
     newPathname,
 }: {
     newPathname: Update<UrlWithStringQuery['pathname']>;
-}): MapUrlFn => ({ parsedUrl }) => ({
-    ...parsedUrl,
-    pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
-});
+}): MapUrlFn => ({ parsedUrl }) => pathnameLens.modify(newPathname)(parsedUrl);
 
 export const replacePathnameInUrl = flipCurried(
     pipe(
@@ -139,14 +152,13 @@ export const appendPathnameToUrl = flipCurried(
     ),
 );
 
+const hashLens = Lens.fromProp<UrlWithStringQuery>()('hash');
+
 const replaceHashInParsedUrl = ({
     newHash,
 }: {
     newHash: Update<UrlWithStringQuery['hash']>;
-}): MapUrlFn => ({ parsedUrl }) => ({
-    ...parsedUrl,
-    hash: newHash instanceof Function ? newHash(parsedUrl.hash) : newHash,
-});
+}): MapUrlFn => ({ parsedUrl }) => hashLens.modify(newHash)(parsedUrl);
 
 export const replaceHashInUrl = flipCurried(
     pipe(

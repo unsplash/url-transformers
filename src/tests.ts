@@ -23,7 +23,7 @@ assert.strictEqual(
     replaceQueryInUrl({
         url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
     })({
-        newQuery: { foo: 1 },
+        newQuery: () => ({ foo: 1 }),
     }),
     'http://foo.com/?foo=1',
 );
@@ -31,7 +31,7 @@ assert.strictEqual(
     replaceQueryInUrl({
         url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
     })({
-        newQuery: {},
+        newQuery: () => ({}),
     }),
     'http://foo.com/',
 );
@@ -49,24 +49,24 @@ assert.strictEqual(
 );
 
 assert.strictEqual(
-    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: '/bar' }),
+    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: () => '/bar' }),
     'https://foo.com/bar',
 );
 assert.strictEqual(
-    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: undefined }),
+    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: () => undefined }),
     'https://foo.com',
 );
 
 assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: '/bar' }),
+    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: () => '/bar' }),
     'https://foo.com/bar',
 );
 assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: undefined }),
+    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: () => undefined }),
     'https://foo.com',
 );
 assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo?example' })({ newPathname: '/bar' }),
+    replacePathnameInUrl({ url: 'https://foo.com/foo?example' })({ newPathname: () => '/bar' }),
     'https://foo.com/bar?example',
 );
 
@@ -80,6 +80,6 @@ assert.strictEqual(
     '/@foo/bar',
 );
 
-assert.strictEqual(replaceHashInUrl({ url: '/foo' })({ newHash: '#bar' }), '/foo#bar');
-assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: undefined }), '/foo');
-assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: '#baz' }), '/foo#baz');
+assert.strictEqual(replaceHashInUrl({ url: '/foo' })({ newHash: () => '#bar' }), '/foo#bar');
+assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: () => undefined }), '/foo');
+assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: () => '#baz' }), '/foo#baz');
