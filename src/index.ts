@@ -88,16 +88,12 @@ const replacePathInParsedUrl = ({
     newPath: Update<UrlWithStringQuery['path']>;
 }): MapUrlFn => ({ parsedUrl }) =>
     pipeWith(
-        getOrElseMaybe(
-            mapMaybe(
-                newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
-                parsePath,
-            ),
-            () => ({
+        mapMaybe(newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath, parsePath),
+        maybe =>
+            getOrElseMaybe(maybe, () => ({
                 search: undefined,
                 pathname: undefined,
-            }),
-        ),
+            })),
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
     );
 
