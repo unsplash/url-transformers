@@ -80,15 +80,23 @@ const parsePath = pipe(
     ({ search, pathname }) => ({ search, pathname }),
 );
 
-const replacePathInParsedUrl = ({ newPath }: { newPath: string | undefined }): MapUrlFn => ({
-    parsedUrl,
-}) =>
+const replacePathInParsedUrl = ({
+    newPath,
+}: {
+    newPath: string | undefined | ((prevPath: string | undefined) => string | undefined);
+}): MapUrlFn => ({ parsedUrl }) =>
     pipe(
         () =>
-            getOrElseMaybe(mapMaybe(newPath, parsePath), () => ({
-                search: undefined,
-                pathname: undefined,
-            })),
+            getOrElseMaybe(
+                mapMaybe(
+                    newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
+                    parsePath,
+                ),
+                () => ({
+                    search: undefined,
+                    pathname: undefined,
+                }),
+            ),
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
     )();
 
@@ -136,11 +144,13 @@ export const appendPathnameToUrl = flipCurried(
     ),
 );
 
-const replaceHashInParsedUrl = ({ newHash }: { newHash: string | undefined }): MapUrlFn => ({
-    parsedUrl,
-}) => ({
+const replaceHashInParsedUrl = ({
+    newHash,
+}: {
+    newHash: string | undefined | ((prevHash: string | undefined) => string | undefined);
+}): MapUrlFn => ({ parsedUrl }) => ({
     ...parsedUrl,
-    hash: newHash,
+    hash: newHash instanceof Function ? newHash(parsedUrl.hash) : newHash,
 });
 
 export const replaceHashInUrl = flipCurried(
