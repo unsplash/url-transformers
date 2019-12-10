@@ -70,10 +70,12 @@ export const addQueryToUrl = flipCurried(
     ),
 );
 
+type ParsedPath = Pick<UrlWithStringQuery, 'search' | 'pathname'>;
+
 const parsePath = pipe(
     // We must wrap this because otherwise TS might pick the wrong overload
     (path: string) => urlHelpers.parse(path),
-    ({ search, pathname }) => ({ search, pathname }),
+    ({ search, pathname }): ParsedPath => ({ search, pathname }),
 );
 
 const replacePathInParsedUrl = ({
