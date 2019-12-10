@@ -1,3 +1,4 @@
+import { ParsedUrlQuery } from 'querystring';
 import * as urlHelpers from 'url';
 import { UrlObject, UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
@@ -34,16 +35,16 @@ const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
 const replaceQueryInParsedUrl = ({
     newQuery,
 }: {
-    newQuery: ParsedUrlQueryInput;
+    newQuery: ParsedUrlQueryInput | ((prev: ParsedUrlQuery) => ParsedUrlQueryInput);
 }): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
-    const { auth, protocol, host, hash, pathname } = parsedUrl;
+    const { auth, protocol, host, hash, pathname, query: prevQuery } = parsedUrl;
     return {
         auth,
         protocol,
         host,
         hash,
         pathname,
-        query: newQuery,
+        query: newQuery instanceof Function ? newQuery(prevQuery) : newQuery,
     };
 };
 
@@ -61,18 +62,10 @@ const addQueryToParsedUrl = ({
     queryToAppend,
 }: {
     queryToAppend: ParsedUrlQueryInput;
-}): MapUrlWithParsedQueryFn => ({ parsedUrl }) => {
-    const { auth, protocol, host, hash, pathname, query: existingQuery } = parsedUrl;
-    const newQuery = { ...existingQuery, ...queryToAppend };
-    return {
-        auth,
-        protocol,
-        host,
-        hash,
-        pathname,
-        query: newQuery,
-    };
-};
+}): MapUrlWithParsedQueryFn =>
+    replaceQueryInParsedUrl({
+        newQuery: existingQuery => ({ ...existingQuery, ...queryToAppend }),
+    });
 
 export const addQueryToUrl = flipCurried(
     pipe(
@@ -99,9 +92,14 @@ export const replacePathInUrl = flipCurried(
     ),
 );
 
-const replacePathnameInParsedUrl = ({ newPathname }: { newPathname: string }): MapUrlFn => ({
-    parsedUrl,
-}) => ({ ...parsedUrl, pathname: newPathname });
+const replacePathnameInParsedUrl = ({
+    newPathname,
+}: {
+    newPathname: string | ((prev: string | undefined) => string);
+}): MapUrlFn => ({ parsedUrl }) => ({
+    ...parsedUrl,
+    pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
+});
 
 export const replacePathnameInUrl = flipCurried(
     pipe(
@@ -110,20 +108,19 @@ export const replacePathnameInUrl = flipCurried(
     ),
 );
 
-const appendPathnameToParsedUrl = ({
-    pathnameToAppend,
-}: {
-    pathnameToAppend: string;
-}): MapUrlFn => ({ parsedUrl }) => {
-    const pathnameParts = pipe(
-        () => mapMaybe(parsedUrl.pathname, getPartsFromPathname),
-        maybe => getOrElseMaybe(maybe, () => []),
-    )({});
-    const pathnamePartsToAppend = getPartsFromPathname(pathnameToAppend);
-    const newPathnameParts = [...pathnameParts, ...pathnamePartsToAppend];
-    const newPathname = getPathnameFromParts(newPathnameParts);
-    return { ...parsedUrl, pathname: newPathname };
-};
+const appendPathnameToParsedUrl = ({ pathnameToAppend }: { pathnameToAppend: string }): MapUrlFn =>
+    replacePathnameInParsedUrl({
+        newPathname: prevPathname => {
+            const pathnameParts = pipe(
+                () => mapMaybe(prevPathname, getPartsFromPathname),
+                maybe => getOrElseMaybe(maybe, () => []),
+            )({});
+            const pathnamePartsToAppend = getPartsFromPathname(pathnameToAppend);
+            const newPathnameParts = [...pathnameParts, ...pathnamePartsToAppend];
+            const newPathname = getPathnameFromParts(newPathnameParts);
+            return newPathname;
+        },
+    });
 
 export const appendPathnameToUrl = flipCurried(
     pipe(
