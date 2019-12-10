@@ -7,6 +7,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.10.tgz#4fa76e6598b7de3f0cb6ec3abacc4f59e5b3a2ce"
   integrity sha512-8xZEYckCbUVgK8Eg7lf5Iy4COKJ5uXlnIOnePN0WUwSQggy9tolM+tDJf7wMOnT/JT/W9xDYIaYggt3mRV2O5w==
 
+pipe-ts@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/pipe-ts/-/pipe-ts-0.0.8.tgz#ceea3f69549b09f0678d644cf2f849a2f6526568"
+  integrity sha512-8c8/ZwMJGwkL0aTW064KhH+xsKM5Zj0T3mfTq+O8re4lVnCyJ0o3BmY8QqO6DS3B6t5Uiluj7wM+btC+oTdKpg==
+
 prettier@^1.15.3:
   version "1.15.3"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.15.3.tgz#1feaac5bdd181237b54dbe65d874e02a1472786a"
