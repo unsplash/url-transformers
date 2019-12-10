@@ -85,8 +85,8 @@ const replacePathInParsedUrl = ({
         mapMaybe(newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath, parsePath),
         maybe =>
             getOrElseMaybe(maybe, () => ({
-                search: undefined,
-                pathname: undefined,
+                search: null,
+                pathname: null,
             })),
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
     );
