@@ -10,32 +10,22 @@ const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
 
 const getPartsFromPathname = (pathname: string) => pathname.split('/').filter(isNonEmptyString);
 
-const parseUrlWithQueryString = (url: string) =>
+const parseUrlWithQueryString = (url: string): UrlWithParsedQuery =>
     urlHelpers.parse(
         url,
         // Parse the query string
         true,
     );
 
+const parseUrlWithoutQueryString = (url: string): UrlWithStringQuery => urlHelpers.parse(url);
+
 // TODO: remove search from "with parsed"
 // TODO: remove query from "with search"
 
-// TODO: rm?
-// TODO: ?
-// type MapUrlFn = (parsedUrl: UrlWithStringQuery) => UrlObject;
-type MapUrlFn = (parsedUrl: UrlWithStringQuery) => UrlWithStringQuery;
+const urlLens = new Lens(parseUrlWithoutQueryString, p => () => urlHelpers.format(p));
 
-// TODO: overload issue workaround
-// const urlLens = new Lens(urlHelpers.parse, p => () => urlHelpers.format(p));
-const urlLens = new Lens((s: string) => urlHelpers.parse(s), p => () => urlHelpers.format(p));
-
-// TODO: allow this somehow
+// TODO: allow this somehow (i.e. set/modify should allow `Url` object, rather than `UrlWithStringQuery`)
 urlLens.set({ port: 100 });
-
-// TODO: rm?
-// TODO: ?
-// type MapUrlWithParsedQueryFn = (parsedUrl: UrlWithParsedQuery) => UrlObject;
-type MapUrlWithParsedQueryFn = (parsedUrl: UrlWithParsedQuery) => UrlWithParsedQuery;
 
 const urlWithParsedQueryLens = new Lens(parseUrlWithQueryString, p => () => urlHelpers.format(p));
 
@@ -62,13 +52,11 @@ const queryInputLens = queryLens.compose(
 // This is a workaround for binding
 const modify = <S, A>(lens: Lens<S, A>) => lens.modify.bind(lens);
 
-const replaceQueryInParsedUrl = modify(queryInputLens);
-
+export const replaceQueryInParsedUrl = modify(queryInputLens);
 export const replaceQueryInUrl = modify(urlWithParsedQueryLens.compose(queryInputLens));
 
-const addQueryToParsedUrl = (queryToAppend: ParsedUrlQueryInput): MapUrlWithParsedQueryFn =>
+export const addQueryToParsedUrl = (queryToAppend: ParsedUrlQueryInput) =>
     replaceQueryInParsedUrl(existingQuery => ({ ...existingQuery, ...queryToAppend }));
-
 export const addQueryToUrl = pipe(
     addQueryToParsedUrl,
     modify(urlWithParsedQueryLens),
@@ -99,16 +87,15 @@ const pathStringLens = pathLens.compose(
     ),
 );
 
-// TODO: no longer needed?
-// const replacePathInParsedUrl = pathStringLens.modify;
+export const replacePathInParsedUrl = modify(pathStringLens);
 export const replacePathInUrl = modify(urlLens.compose(pathStringLens));
 
 const pathnameLens = Lens.fromProp<UrlWithStringQuery>()('pathname');
 
-const replacePathnameInParsedUrl = modify(pathnameLens);
+export const replacePathnameInParsedUrl = modify(pathnameLens);
 export const replacePathnameInUrl = modify(urlLens.compose(pathnameLens));
 
-const appendPathnameToParsedUrl = (pathnameToAppend: string): MapUrlFn =>
+export const appendPathnameToParsedUrl = (pathnameToAppend: string) =>
     replacePathnameInParsedUrl(prevPathname => {
         const pathnameParts = pipeWith(mapMaybe(prevPathname, getPartsFromPathname), maybe =>
             getOrElseMaybe(maybe, () => []),
@@ -118,7 +105,6 @@ const appendPathnameToParsedUrl = (pathnameToAppend: string): MapUrlFn =>
         const newPathname = getPathnameFromParts(newPathnameParts);
         return newPathname;
     });
-
 export const appendPathnameToUrl = pipe(
     appendPathnameToParsedUrl,
     modify(urlLens),
@@ -126,6 +112,5 @@ export const appendPathnameToUrl = pipe(
 
 const hashLens = Lens.fromProp<UrlWithStringQuery>()('hash');
 
-// TODO: no longer needed?
-// const replaceHashInParsedUrl = hashLens.modify;
+export const replaceHashInParsedUrl = modify(hashLens);
 export const replaceHashInUrl = modify(urlLens.compose(hashLens));
