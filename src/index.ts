@@ -1,102 +1,174 @@
+import { fold, map, tryCatch } from 'fp-ts/lib/Either';
+import * as t from 'io-ts';
 import { Lens } from 'monocle-ts';
 import { pipe, pipeWith } from 'pipe-ts';
-import { ParsedUrlQueryInput } from 'querystring';
 import * as urlHelpers from 'url';
-import { UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { isNonEmptyString } from './helpers/other';
 
-const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
-
-const getPartsFromPathname = (pathname: string) => pathname.split('/').filter(isNonEmptyString);
-
-const parseUrlWithQueryString = (url: string): UrlWithParsedQuery =>
-    urlHelpers.parse(
-        url,
-        // Parse the query string
-        true,
-    );
-
-const parseUrlWithoutQueryString = (url: string): UrlWithStringQuery => urlHelpers.parse(url);
-
-// TODO: remove search from "with parsed"
-// TODO: remove query from "with search"
-
-const urlLens = new Lens(parseUrlWithoutQueryString, p => () => urlHelpers.format(p));
-
-// TODO: allow this somehow (i.e. set/modify should allow `Url` object, rather than `UrlWithStringQuery`)
-urlLens.set({ port: 100 });
-
-const urlWithParsedQueryLens = new Lens(parseUrlWithQueryString, p => () => urlHelpers.format(p));
-
-const queryAndSearchLens = Lens.fromProps<UrlWithParsedQuery>()(['search', 'query']);
-
-// TODO: or omit search somehow?
-const queryLens = queryAndSearchLens.compose(
-    new Lens(({ query }) => query, query => () => ({ search: null, query })),
+const urlT = new t.Type<urlHelpers.URL, string, string>(
+    'URL',
+    (value): value is urlHelpers.URL => value instanceof urlHelpers.URL,
+    (string, context) =>
+        pipeWith(
+            tryCatch(() => new urlHelpers.URL(string), error => error),
+            fold(() => t.failure(string, context), t.success),
+        ),
+    url => url.toString(),
 );
 
-// // TODO: not a lawful lens!
-// const s: Pick<UrlWithParsedQuery, 'search' | 'query'> = { query: { foo: '1' }, search: 'a' };
-// // 2. set(get(s))(s) = s
-// assert.deepStrictEqual(queryLens.set(queryLens.get(s))(s), s); // error
+/*
+We can't create copies of a `URL`:
 
-const queryInputLens = queryLens.compose(
-    new Lens(
-        query => query as ParsedUrlQueryInput,
-        query => () => query as UrlWithParsedQuery['query'],
-    ),
+```ts
+(Object.assign({}, new URL('https://foo.bar/'), {pathname: '/foo'})).toString()
+// => '[object Object]'
+```
+
+This is because `URL` is designed to be operated on via mutations:
+
+```ts
+(Object.assign(new URL('https://foo.bar/'), {pathname: '/foo'})).toString()
+// => 'https://foo.bar/foo'
+```
+
+But we want to operate on it immutably.
+
+Given this, how can we parse/decode a URL, modify it immutably, and then
+serialize/format/stringify/encode it again?
+
+We have to create an immutable intermediate object. That's what `URLObject` is for.
+*/
+
+// TODO: omit helper in newer TS
+// TODO: consistent casing for "URL"
+// We omit some properties since they're just serialized versions of other properties, which only
+// make sense for a mutable API.
+type URLObject = Pick<
+    urlHelpers.URL,
+    Exclude<keyof urlHelpers.URL, 'toJSON' | 'search' | 'href' | 'origin' | 'host'>
+>;
+
+// TODO: pick helper
+const urlToUrlObject = ({
+    hash,
+    hostname,
+    password,
+    pathname,
+    port,
+    protocol,
+    searchParams,
+    username,
+}: urlHelpers.URL): URLObject => ({
+    hash,
+    hostname,
+    password,
+    pathname,
+    port,
+    protocol,
+    searchParams,
+    username,
+});
+
+const createAuthForFormat = ({
+    username,
+    password,
+}: Pick<urlHelpers.URL, 'username' | 'password'>): string | undefined => {
+    if (username !== '') {
+        const parts = [username, ...(password === undefined ? [] : [password])];
+        return parts.join(':');
+    } else {
+        return undefined;
+    }
+};
+
+const urlObjectToUrlString = (urlObject: URLObject): string =>
+    urlHelpers.format({
+        // TODO: omit here, e.g. `username`, `searchParams`
+        ...urlObject,
+        search: urlObject.searchParams.toString(),
+        auth: createAuthForFormat(urlObject),
+    });
+
+const urlStringToUrl = (s: string): urlHelpers.URL => new urlHelpers.URL(s);
+
+// Workaround for
+// https://github.com/whatwg/url/issues/354
+// https://github.com/nodejs/node/pull/28482
+// https://github.com/nodejs/node/issues/25099
+// https://stackoverflow.com/questions/55867415/create-empty-url-object-from-scratch-in-javascript
+const urlObjectToUrl = pipe(
+    urlObjectToUrlString,
+    urlStringToUrl,
 );
+
+const urlObjectLens = new Lens(urlToUrlObject, urlObject => () => urlObjectToUrl(urlObject));
 
 // TODO
 // This is a workaround for binding
 const modify = <S, A>(lens: Lens<S, A>) => lens.modify.bind(lens);
 
-export const replaceQueryInParsedUrl = modify(queryInputLens);
-export const replaceQueryInUrl = modify(urlWithParsedQueryLens.compose(queryInputLens));
-
-export const addQueryToParsedUrl = (queryToAppend: ParsedUrlQueryInput) =>
-    replaceQueryInParsedUrl(existingQuery => ({ ...existingQuery, ...queryToAppend }));
-export const addQueryToUrl = pipe(
-    addQueryToParsedUrl,
-    modify(urlWithParsedQueryLens),
+export const modifyUrl = pipe(
+    modify(urlObjectLens),
+    fn =>
+        pipe(
+            urlT.decode,
+            map(fn),
+            map(urlT.encode),
+        ),
 );
 
-type ParsedPath = Pick<UrlWithStringQuery, 'search' | 'pathname'>;
-const pathLens = Lens.fromProps<UrlWithStringQuery>()(['search', 'pathname']);
-
-const parsePath = pipe(
-    // We must wrap this because otherwise TS might pick the wrong overload
-    (path: string) => urlHelpers.parse(path),
-    pathLens.get,
+const replaceSearchParamsInURLObject = modify(Lens.fromProp<URLObject>()('searchParams'));
+export const replaceSearchParamsInUrl = pipe(
+    replaceSearchParamsInURLObject,
+    modifyUrl,
 );
 
-const getParsedPathFromString = (maybePath: UrlWithStringQuery['path']): ParsedPath =>
-    pipeWith(
-        maybePath,
-        maybe => mapMaybe(maybe, parsePath),
-        maybe => getOrElseMaybe(maybe, () => ({ search: null, pathname: null })),
+export const addSearchParamsToURLObject = (searchParamsToAdd: urlHelpers.URLSearchParams) =>
+    replaceSearchParamsInURLObject(
+        prev => new urlHelpers.URLSearchParams([...prev.entries(), ...searchParamsToAdd.entries()]),
     );
-
-const pathStringLens = pathLens.compose(
-    new Lens(
-        // TODO: well, get will always return, no?
-        // TODO: return undefined if empty string?
-        (parsedPath): string | null => urlHelpers.format(parsedPath),
-        maybePath => () => getParsedPathFromString(maybePath),
-    ),
+export const addSearchParamsInUrl = pipe(
+    addSearchParamsToURLObject,
+    modifyUrl,
 );
 
-export const replacePathInParsedUrl = modify(pathStringLens);
-export const replacePathInUrl = modify(urlLens.compose(pathStringLens));
+type PathObject = Pick<URLObject, 'pathname' | 'searchParams'>;
+const pathObjectLens = Lens.fromProps<URLObject>()(['pathname', 'searchParams']);
+export const replacePathObjectInURLObject = modify(pathObjectLens);
+export const replacePathObjectInUrl = pipe(
+    replacePathObjectInURLObject,
+    modifyUrl,
+);
 
-const pathnameLens = Lens.fromProp<UrlWithStringQuery>()('pathname');
+const pathObjectToString = ({ pathname, searchParams }: PathObject): string =>
+    `${pathname}${searchParams.toString()}`;
+const pathStringToObject = (s: string): PathObject => {
+    // TODO: assert
+    const [, pathname, search] = s.match(/(.*)\??(.*)/)!;
+    return { pathname, searchParams: new urlHelpers.URLSearchParams(search) };
+};
+const pathLens = pathObjectLens.compose(
+    new Lens(pathObjectToString, s => () => pathStringToObject(s)),
+);
 
-export const replacePathnameInParsedUrl = modify(pathnameLens);
-export const replacePathnameInUrl = modify(urlLens.compose(pathnameLens));
+export const replacePathInURLObject = modify(pathLens);
+export const replacePathInUrl = pipe(
+    replacePathInURLObject,
+    modifyUrl,
+);
 
-export const appendPathnameToParsedUrl = (pathnameToAppend: string) =>
-    replacePathnameInParsedUrl(prevPathname => {
+export const replacePathnameInURLObject = modify(Lens.fromProp<URLObject>()('pathname'));
+export const replacePathnameInUrl = pipe(
+    replacePathnameInURLObject,
+    modifyUrl,
+);
+
+const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
+const getPartsFromPathname = (pathname: string) => pathname.split('/').filter(isNonEmptyString);
+
+export const appendPathnameToURLObject = (pathnameToAppend: string) =>
+    replacePathnameInURLObject(prevPathname => {
         const pathnameParts = pipeWith(mapMaybe(prevPathname, getPartsFromPathname), maybe =>
             getOrElseMaybe(maybe, () => []),
         );
@@ -106,11 +178,12 @@ export const appendPathnameToParsedUrl = (pathnameToAppend: string) =>
         return newPathname;
     });
 export const appendPathnameToUrl = pipe(
-    appendPathnameToParsedUrl,
-    modify(urlLens),
+    appendPathnameToURLObject,
+    modifyUrl,
 );
 
-const hashLens = Lens.fromProp<UrlWithStringQuery>()('hash');
-
-export const replaceHashInParsedUrl = modify(hashLens);
-export const replaceHashInUrl = modify(urlLens.compose(hashLens));
+export const replaceHashInURLObject = modify(Lens.fromProp<URLObject>()('hash'));
+export const replaceHashInUrl = pipe(
+    replaceHashInURLObject,
+    modifyUrl,
+);

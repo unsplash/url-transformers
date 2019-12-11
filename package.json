@@ -19,6 +19,7 @@
   "dependencies": {
     "@types/node": "^12.12.16",
     "fp-ts": "^2.2.0",
+    "io-ts": "^2.0.1",
     "monocle-ts": "^2.0.0",
     "pipe-ts": "^0.0.8"
   },
