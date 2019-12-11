@@ -42,16 +42,13 @@ assert.strictEqual(
     replacePathInUrl(() => '/bar')('https://foo.com/foo?example'),
     'https://foo.com/bar',
 );
-assert.strictEqual(
-    replacePathInUrl(() => undefined)('https://foo.com/foo?example'),
-    'https://foo.com',
-);
+assert.strictEqual(replacePathInUrl(() => null)('https://foo.com/foo?example'), 'https://foo.com');
 
 assert.strictEqual(
     replacePathnameInUrl(() => '/bar')('https://foo.com/foo'),
     'https://foo.com/bar',
 );
-assert.strictEqual(replacePathnameInUrl(() => undefined)('https://foo.com/foo'), 'https://foo.com');
+assert.strictEqual(replacePathnameInUrl(() => null)('https://foo.com/foo'), 'https://foo.com');
 assert.strictEqual(
     replacePathnameInUrl(() => '/bar')('https://foo.com/foo?example'),
     'https://foo.com/bar?example',
@@ -63,5 +60,5 @@ assert.strictEqual(appendPathnameToUrl('/bar')('/foo?example'), '/foo/bar?exampl
 assert.strictEqual(appendPathnameToUrl('/bar')('/@foo'), '/@foo/bar');
 
 assert.strictEqual(replaceHashInUrl(() => '#bar')('/foo'), '/foo#bar');
-assert.strictEqual(replaceHashInUrl(() => undefined)('/foo#bar'), '/foo');
+assert.strictEqual(replaceHashInUrl(() => null)('/foo#bar'), '/foo');
 assert.strictEqual(replaceHashInUrl(() => '#baz')('/foo#bar'), '/foo#baz');

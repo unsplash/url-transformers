@@ -1,5 +1,6 @@
 import { Lens } from 'monocle-ts';
 import { pipe, pipeWith } from 'pipe-ts';
+import { ParsedUrlQueryInput } from 'querystring';
 import * as urlHelpers from 'url';
 import { UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
@@ -38,7 +39,7 @@ const urlWithParsedQueryLens = new Lens(parseUrlWithQueryString, p => () => urlH
 const queryAndSearchLens = Lens.fromProps<UrlWithParsedQuery>()(['search', 'query']);
 
 const queryLens = queryAndSearchLens.compose(
-    new Lens(({ query }) => query, query => () => ({ search: undefined, query })),
+    new Lens(({ query }) => query, query => () => ({ search: null, query })),
 );
 
 // // TODO: not a lawful lens!
@@ -61,9 +62,6 @@ const replaceQueryInParsedUrl = modify(queryInputLens);
 
 export const replaceQueryInUrl = modify(urlWithParsedQueryLens.compose(queryInputLens));
 
-// Note: if/when this PR is merged, this type will be available via the Node types.
-// https://github.com/DefinitelyTyped/DefinitelyTyped/pull/33997
-type ParsedUrlQueryInput = { [key: string]: unknown };
 const addQueryToParsedUrl = (queryToAppend: ParsedUrlQueryInput): MapUrlWithParsedQueryFn =>
     replaceQueryInParsedUrl(existingQuery => ({ ...existingQuery, ...queryToAppend }));
 
@@ -87,14 +85,14 @@ const getParsedPathFromString = (maybePath: UrlWithStringQuery['path']): ParsedP
     pipeWith(
         maybePath,
         maybe => mapMaybe(maybe, parsePath),
-        maybe => getOrElseMaybe(maybe, () => ({ search: undefined, pathname: undefined })),
+        maybe => getOrElseMaybe(maybe, () => ({ search: null, pathname: null })),
     );
 
 const pathStringLens = pathLens.compose(
     new Lens(
         // TODO: well, get will always return, no?
         // TODO: return undefined if empty string?
-        (parsedPath): string | undefined => urlHelpers.format(parsedPath),
+        (parsedPath): string | null => urlHelpers.format(parsedPath),
         maybePath => () => getParsedPathFromString(maybePath),
     ),
 );
