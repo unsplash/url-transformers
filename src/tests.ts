@@ -9,17 +9,6 @@ import {
 } from './index';
 
 assert.strictEqual(
-    addQueryToUrl({ url: 'http://foo.com/' })({
-        queryToAppend: {
-            string: 'string',
-            number: 1,
-            boolean: true,
-            strings: ['string1', 'string2'],
-        },
-    }),
-    'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
-);
-assert.strictEqual(
     replaceQueryInUrl({
         url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
     })({
@@ -34,6 +23,18 @@ assert.strictEqual(
         newQuery: {},
     }),
     'http://foo.com/',
+);
+
+assert.strictEqual(
+    addQueryToUrl({ url: 'http://foo.com/' })({
+        queryToAppend: {
+            string: 'string',
+            number: 1,
+            boolean: true,
+            strings: ['string1', 'string2'],
+        },
+    }),
+    'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
 );
 assert.strictEqual(
     addQueryToUrl({ url: 'http://foo:bar@baz.com/' })({
