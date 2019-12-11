@@ -9,7 +9,7 @@
   "version": "0.0.6",
   "scripts": {
     "compile": "rm -rf ./target/ && tsc",
-    "test": "npm run compile && node ./target/tests.js",
+    "test": "npm run compile && node --require source-map-support/register ./target/tests.js",
     "format": "prettier --write './**/*.{ts,js,json,md}' '.prettierrc'",
     "prepublishOnly": "npm run compile"
   },
@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "prettier": "^1.15.3",
+    "source-map-support": "^0.5.16",
     "typescript": "^3.2.1"
   }
 }
