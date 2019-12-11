@@ -16,6 +16,9 @@ const parseUrlWithQueryString = (url: string) =>
         true,
     );
 
+// TODO: remove search from "with parsed"
+// TODO: remove query from "with search"
+
 // TODO: rm?
 // TODO: ?
 // type MapUrlFn = (parsedUrl: UrlWithStringQuery) => UrlObject;
