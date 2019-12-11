@@ -71,6 +71,7 @@ assert.strictEqual(
 );
 
 assert.strictEqual(appendPathnameToUrl({ url: '/foo' })({ pathnameToAppend: '/bar' }), '/foo/bar');
+assert.strictEqual(appendPathnameToUrl({ url: '/foo/' })({ pathnameToAppend: '/bar' }), '/foo/bar');
 assert.strictEqual(
     appendPathnameToUrl({ url: '/foo?example' })({ pathnameToAppend: '/bar' }),
     '/foo/bar?example',
