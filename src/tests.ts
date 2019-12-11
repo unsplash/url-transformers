@@ -9,78 +9,59 @@ import {
 } from './index';
 
 assert.strictEqual(
-    addQueryToUrl({ url: 'http://foo.com/' })({
-        queryToAppend: {
-            string: 'string',
-            number: 1,
-            boolean: true,
-            strings: ['string1', 'string2'],
-        },
-    }),
+    addQueryToUrl({
+        string: 'string',
+        number: 1,
+        boolean: true,
+        strings: ['string1', 'string2'],
+    })('http://foo.com/'),
     'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
 );
 assert.strictEqual(
-    replaceQueryInUrl({
-        url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
-    })({
-        newQuery: () => ({ foo: 1 }),
-    }),
+    replaceQueryInUrl(() => ({ foo: 1 }))(
+        'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
+    ),
     'http://foo.com/?foo=1',
 );
 assert.strictEqual(
-    replaceQueryInUrl({
-        url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
-    })({
-        newQuery: () => ({}),
-    }),
+    replaceQueryInUrl(() => ({}))(
+        'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
+    ),
     'http://foo.com/',
 );
 assert.strictEqual(
-    addQueryToUrl({ url: 'http://foo:bar@baz.com/' })({
-        queryToAppend: { a: 'b' },
-    }),
+    addQueryToUrl({ a: 'b' })('http://foo:bar@baz.com/'),
     'http://foo:bar@baz.com/?a=b',
 );
 assert.strictEqual(
-    addQueryToUrl({ url: 'http://foo.com/?a=b&b=c' })({
-        queryToAppend: { c: 'd' },
-    }),
+    addQueryToUrl({ c: 'd' })('http://foo.com/?a=b&b=c'),
     'http://foo.com/?a=b&b=c&c=d',
 );
 
 assert.strictEqual(
-    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: () => '/bar' }),
+    replacePathInUrl(() => '/bar')('https://foo.com/foo?example'),
     'https://foo.com/bar',
 );
 assert.strictEqual(
-    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: () => undefined }),
+    replacePathInUrl(() => undefined)('https://foo.com/foo?example'),
     'https://foo.com',
 );
 
 assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: () => '/bar' }),
+    replacePathnameInUrl(() => '/bar')('https://foo.com/foo'),
     'https://foo.com/bar',
 );
+assert.strictEqual(replacePathnameInUrl(() => undefined)('https://foo.com/foo'), 'https://foo.com');
 assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: () => undefined }),
-    'https://foo.com',
-);
-assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo?example' })({ newPathname: () => '/bar' }),
+    replacePathnameInUrl(() => '/bar')('https://foo.com/foo?example'),
     'https://foo.com/bar?example',
 );
 
-assert.strictEqual(appendPathnameToUrl({ url: '/foo' })({ pathnameToAppend: '/bar' }), '/foo/bar');
-assert.strictEqual(appendPathnameToUrl({ url: '/foo/' })({ pathnameToAppend: '/bar' }), '/foo/bar');
-assert.strictEqual(
-    appendPathnameToUrl({ url: '/foo?example' })({ pathnameToAppend: '/bar' }),
-    '/foo/bar?example',
-);
-assert.strictEqual(
-    appendPathnameToUrl({ url: '/@foo' })({ pathnameToAppend: '/bar' }),
-    '/@foo/bar',
-);
+assert.strictEqual(appendPathnameToUrl('/bar')('/foo'), '/foo/bar');
+assert.strictEqual(appendPathnameToUrl('/bar')('/foo/'), '/foo/bar');
+assert.strictEqual(appendPathnameToUrl('/bar')('/foo?example'), '/foo/bar?example');
+assert.strictEqual(appendPathnameToUrl('/bar')('/@foo'), '/@foo/bar');
 
-assert.strictEqual(replaceHashInUrl({ url: '/foo' })({ newHash: () => '#bar' }), '/foo#bar');
-assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: () => undefined }), '/foo');
-assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: () => '#baz' }), '/foo#baz');
+assert.strictEqual(replaceHashInUrl(() => '#bar')('/foo'), '/foo#bar');
+assert.strictEqual(replaceHashInUrl(() => undefined)('/foo#bar'), '/foo');
+assert.strictEqual(replaceHashInUrl(() => '#baz')('/foo#bar'), '/foo#baz');
