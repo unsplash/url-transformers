@@ -41,6 +41,7 @@ const urlWithParsedQueryLens = new Lens(parseUrlWithQueryString, p => () => urlH
 
 const queryAndSearchLens = Lens.fromProps<UrlWithParsedQuery>()(['search', 'query']);
 
+// TODO: or omit search somehow?
 const queryLens = queryAndSearchLens.compose(
     new Lens(({ query }) => query, query => () => ({ search: null, query })),
 );
@@ -71,8 +72,6 @@ const addQueryToParsedUrl = (queryToAppend: ParsedUrlQueryInput): MapUrlWithPars
 export const addQueryToUrl = pipe(
     addQueryToParsedUrl,
     modify(urlWithParsedQueryLens),
-    // TODO: ?
-    // pipe(urlWithParsedQueryLens, modify)
 );
 
 type ParsedPath = Pick<UrlWithStringQuery, 'search' | 'pathname'>;
@@ -123,8 +122,6 @@ const appendPathnameToParsedUrl = (pathnameToAppend: string): MapUrlFn =>
 export const appendPathnameToUrl = pipe(
     appendPathnameToParsedUrl,
     modify(urlLens),
-    // TODO: ?
-    // pipe(urlLens, modify)
 );
 
 const hashLens = Lens.fromProp<UrlWithStringQuery>()('hash');
