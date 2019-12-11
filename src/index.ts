@@ -29,6 +29,9 @@ type MapUrlFn = (parsedUrl: UrlWithStringQuery) => UrlWithStringQuery;
 // const urlLens = new Lens(urlHelpers.parse, p => () => urlHelpers.format(p));
 const urlLens = new Lens((s: string) => urlHelpers.parse(s), p => () => urlHelpers.format(p));
 
+// TODO: allow this somehow
+urlLens.set({ port: 100 });
+
 // TODO: rm?
 // TODO: ?
 // type MapUrlWithParsedQueryFn = (parsedUrl: UrlWithParsedQuery) => UrlObject;
