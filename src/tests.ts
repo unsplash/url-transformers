@@ -54,7 +54,7 @@ assert.strictEqual(
     'https://foo.com/bar',
 );
 assert.strictEqual(
-    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: undefined }),
+    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: null }),
     'https://foo.com',
 );
 
@@ -63,7 +63,7 @@ assert.strictEqual(
     'https://foo.com/bar',
 );
 assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: undefined }),
+    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: null }),
     'https://foo.com',
 );
 assert.strictEqual(
@@ -83,5 +83,5 @@ assert.strictEqual(
 );
 
 assert.strictEqual(replaceHashInUrl({ url: '/foo' })({ newHash: '#bar' }), '/foo#bar');
-assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: undefined }), '/foo');
+assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: null }), '/foo');
 assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: '#baz' }), '/foo#baz');
