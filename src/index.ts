@@ -1,12 +1,14 @@
 import { pipe, pipeWith } from 'pipe-ts';
 import { ParsedUrlQueryInput } from 'querystring';
 import * as urlHelpers from 'url';
-import { UrlObject, UrlWithParsedQuery, UrlWithStringQuery } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { flipCurried, isNonEmptyString } from './helpers/other';
 
+interface NodeUrlObjectWithParsedQuery extends urlHelpers.UrlObject {
+    query: ParsedUrlQueryInput | null;
+}
+
 type Update<T> = T | ((prev: T) => T);
-type BinaryUpdate<A, B> = B | ((prev: A) => B);
 
 const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
 
@@ -19,44 +21,65 @@ const parseUrlWithQueryString = (url: string) =>
         true,
     );
 
-type MapUrlFn = ({ parsedUrl }: { parsedUrl: UrlWithStringQuery }) => UrlObject;
-const mapUrl = (fn: MapUrlFn) =>
+// We omit some properties since they're just serialized versions of other properties.
+type ParsedUrl = Pick<
+    NodeUrlObjectWithParsedQuery,
+    'auth' | 'hash' | 'hostname' | 'pathname' | 'port' | 'protocol' | 'query' | 'slashes'
+>;
+
+const convertNodeUrl = ({
+    auth,
+    hash,
+    hostname,
+    pathname,
+    port,
+    protocol,
+    query,
+    slashes,
+}: urlHelpers.UrlWithParsedQuery): ParsedUrl => ({
+    auth,
+    hash,
+    hostname,
+    pathname,
+    port,
+    protocol,
+    query,
+    slashes,
+});
+
+type MapParsedUrlFn = ({ parsedUrl }: { parsedUrl: ParsedUrl }) => ParsedUrl;
+export const mapParsedUrl = (f: MapParsedUrlFn): MapParsedUrlFn => ({ parsedUrl }) =>
+    f({ parsedUrl });
+
+type MapUrlFn = ({ url }: { url: string }) => string;
+export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn =>
     pipe(
-        ({ url }: { url: string }) => urlHelpers.parse(url),
-        parsedUrl => fn({ parsedUrl }),
+        ({ url }) => parseUrlWithQueryString(url),
+        parsedUrl => fn({ parsedUrl: convertNodeUrl(parsedUrl) }),
         urlHelpers.format,
     );
 
-type MapUrlWithParsedQueryFn = ({ parsedUrl }: { parsedUrl: UrlWithParsedQuery }) => UrlObject;
-const mapUrlWithParsedQuery = (fn: MapUrlWithParsedQueryFn) =>
-    pipe(
-        ({ url }: { url: string }) => parseUrlWithQueryString(url),
-        parsedUrl => fn({ parsedUrl }),
-        urlHelpers.format,
-    );
-
-const replaceQueryInParsedUrl = ({
+export const replaceQueryInParsedUrl = ({
     newQuery,
 }: {
-    newQuery: BinaryUpdate<UrlWithParsedQuery['query'], ParsedUrlQueryInput>;
-}): MapUrlWithParsedQueryFn => ({ parsedUrl }) => ({
+    newQuery: Update<ParsedUrl['query']>;
+}): MapParsedUrlFn => ({ parsedUrl }) => ({
     ...parsedUrl,
-    search: undefined,
     query: newQuery instanceof Function ? newQuery(parsedUrl.query) : newQuery,
 });
 
 export const replaceQueryInUrl = flipCurried(
     pipe(
         replaceQueryInParsedUrl,
-        mapUrlWithParsedQuery,
+        mapUrl,
     ),
 );
 
-const addQueryToParsedUrl = ({
+export const addQueryToParsedUrl = ({
     queryToAppend,
 }: {
-    queryToAppend: ParsedUrlQueryInput;
-}): MapUrlWithParsedQueryFn =>
+    queryToAppend: ParsedUrl['query'];
+}): MapParsedUrlFn =>
     replaceQueryInParsedUrl({
         newQuery: existingQuery => ({ ...existingQuery, ...queryToAppend }),
     });
@@ -64,30 +87,29 @@ const addQueryToParsedUrl = ({
 export const addQueryToUrl = flipCurried(
     pipe(
         addQueryToParsedUrl,
-        mapUrlWithParsedQuery,
+        mapUrl,
     ),
 );
 
-type ParsedPath = Pick<UrlWithStringQuery, 'search' | 'pathname'>;
+type ParsedPath = Pick<ParsedUrl, 'query' | 'pathname'>;
 
 const parsePath = pipe(
-    // We must wrap this because otherwise TS might pick the wrong overload
-    (path: string) => urlHelpers.parse(path),
-    ({ search, pathname }): ParsedPath => ({ search, pathname }),
+    (path: string) => urlHelpers.parse(path, true),
+    ({ query, pathname }): ParsedPath => ({ query, pathname }),
 );
 
-const getParsedPathFromString = (maybePath: UrlWithStringQuery['path']): ParsedPath =>
+const getParsedPathFromString = (maybePath: NodeUrlObjectWithParsedQuery['path']): ParsedPath =>
     pipeWith(
         maybePath,
         maybe => mapMaybe(maybe, parsePath),
-        maybe => getOrElseMaybe(maybe, () => ({ search: null, pathname: null })),
+        maybe => getOrElseMaybe(maybe, () => ({ query: null, pathname: null })),
     );
 
-const replacePathInParsedUrl = ({
+export const replacePathInParsedUrl = ({
     newPath,
 }: {
-    newPath: Update<UrlWithStringQuery['path']>;
-}): MapUrlFn => ({ parsedUrl }) =>
+    newPath: Update<NodeUrlObjectWithParsedQuery['path']>;
+}): MapParsedUrlFn => ({ parsedUrl }) =>
     pipeWith(
         newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
         getParsedPathFromString,
@@ -101,11 +123,11 @@ export const replacePathInUrl = flipCurried(
     ),
 );
 
-const replacePathnameInParsedUrl = ({
+export const replacePathnameInParsedUrl = ({
     newPathname,
 }: {
-    newPathname: Update<UrlWithStringQuery['pathname']>;
-}): MapUrlFn => ({ parsedUrl }) => ({
+    newPathname: Update<ParsedUrl['pathname']>;
+}): MapParsedUrlFn => ({ parsedUrl }) => ({
     ...parsedUrl,
     pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
 });
@@ -117,7 +139,11 @@ export const replacePathnameInUrl = flipCurried(
     ),
 );
 
-const appendPathnameToParsedUrl = ({ pathnameToAppend }: { pathnameToAppend: string }): MapUrlFn =>
+export const appendPathnameToParsedUrl = ({
+    pathnameToAppend,
+}: {
+    pathnameToAppend: string;
+}): MapParsedUrlFn =>
     replacePathnameInParsedUrl({
         newPathname: prevPathname => {
             const pathnameParts = pipeWith(mapMaybe(prevPathname, getPartsFromPathname), maybe =>
@@ -137,11 +163,11 @@ export const appendPathnameToUrl = flipCurried(
     ),
 );
 
-const replaceHashInParsedUrl = ({
+export const replaceHashInParsedUrl = ({
     newHash,
 }: {
-    newHash: Update<UrlWithStringQuery['hash']>;
-}): MapUrlFn => ({ parsedUrl }) => ({
+    newHash: Update<ParsedUrl['hash']>;
+}): MapParsedUrlFn => ({ parsedUrl }) => ({
     ...parsedUrl,
     hash: newHash instanceof Function ? newHash(parsedUrl.hash) : newHash,
 });
