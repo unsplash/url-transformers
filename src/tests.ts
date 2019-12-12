@@ -5,11 +5,21 @@ import {
     addSearchParamsInUrl,
     appendPathnameToUrl,
     modifyUrl,
+    modifyUrlClass,
     replaceHashInUrl,
     replacePathInUrl,
     replacePathnameInUrl,
     replaceSearchParamsInUrl,
 } from './index';
+
+assert.deepEqual(
+    modifyUrlClass(urlObject => ({
+        ...urlObject,
+        pathname: '/foo',
+        searchParams: new urlHelpers.URLSearchParams({ a: 'b' }),
+    }))(new urlHelpers.URL('https://foo.com/bar')).toString(),
+    'https://foo.com/foo?a=b',
+);
 
 assert.deepEqual(
     modifyUrl(urlObject => ({

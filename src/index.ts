@@ -6,7 +6,7 @@ import * as urlHelpers from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { isNonEmptyString } from './helpers/other';
 
-const urlT = new t.Type<urlHelpers.URL, string, string>(
+const urlClassT = new t.Type<urlHelpers.URL, string, string>(
     'URL',
     (value): value is urlHelpers.URL => value instanceof urlHelpers.URL,
     (string, context) =>
@@ -14,7 +14,7 @@ const urlT = new t.Type<urlHelpers.URL, string, string>(
             tryCatch(() => new urlHelpers.URL(string), error => error),
             fold(() => t.failure(string, context), t.success),
         ),
-    url => url.toString(),
+    urlClass => urlClass.toString(),
 );
 
 /*
@@ -46,7 +46,7 @@ We have to create an immutable intermediate object. That's what `URLObject` is f
 // make sense for a mutable API.
 type URLObject = Pick<
     urlHelpers.URL,
-    Exclude<keyof urlHelpers.URL, 'toJSON' | 'search' | 'href' | 'origin' | 'host'>
+    Exclude<keyof urlHelpers.URL, 'toJSON' | 'toString' | 'search' | 'href' | 'origin' | 'host'>
 >;
 
 // TODO: pick helper
@@ -108,13 +108,14 @@ const urlObjectLens = new Lens(urlToUrlObject, urlObject => () => urlObjectToUrl
 // This is a workaround for binding
 const modify = <S, A>(lens: Lens<S, A>) => lens.modify.bind(lens);
 
+export const modifyUrlClass = modify(urlObjectLens);
 export const modifyUrl = pipe(
-    modify(urlObjectLens),
-    fn =>
+    modifyUrlClass,
+    urlClassFn =>
         pipe(
-            urlT.decode,
-            map(fn),
-            map(urlT.encode),
+            urlClassT.decode,
+            map(urlClassFn),
+            map(urlClassT.encode),
         ),
 );
 
