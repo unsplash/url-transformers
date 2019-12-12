@@ -119,7 +119,7 @@ export const modifyUrl = pipe(
         ),
 );
 
-const replaceSearchParamsInURLObject = modify(Lens.fromProp<URLObject>()('searchParams'));
+export const replaceSearchParamsInURLObject = modify(Lens.fromProp<URLObject>()('searchParams'));
 export const replaceSearchParamsInUrl = pipe(
     replaceSearchParamsInURLObject,
     modifyUrl,

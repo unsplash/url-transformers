@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import { right } from 'fp-ts/lib/Either';
+import { pipe } from 'pipe-ts';
 import * as urlHelpers from 'url';
 import {
     addSearchParamsInUrl,
@@ -9,7 +10,9 @@ import {
     replaceHashInUrl,
     replacePathInUrl,
     replacePathnameInUrl,
+    replacePathnameInURLObject,
     replaceSearchParamsInUrl,
+    replaceSearchParamsInURLObject,
 } from './index';
 
 assert.deepEqual(
@@ -27,6 +30,16 @@ assert.deepEqual(
         pathname: '/foo',
         searchParams: new urlHelpers.URLSearchParams({ a: 'b' }),
     }))('https://foo.com/bar'),
+    right('https://foo.com/foo?a=b'),
+);
+
+assert.deepEqual(
+    modifyUrl(
+        pipe(
+            replacePathnameInURLObject(() => '/foo'),
+            replaceSearchParamsInURLObject(() => new urlHelpers.URLSearchParams({ a: 'b' })),
+        ),
+    )('https://foo.com/bar'),
     right('https://foo.com/foo?a=b'),
 );
 
