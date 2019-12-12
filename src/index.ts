@@ -130,9 +130,6 @@ const urlObjectToUrlClass = pipe(
     urlStringToUrlClass,
 );
 
-// TODO: Iso instead?
-// https://functionalprogramming.slack.com/archives/C7BBY9A95/p1576138710461900?thread_ts=1576091116.461600&cid=C7BBY9A95
-// https://gcanti.github.io/monocle-ts/modules/index.ts.html#iso-class
 const urlObjectIso = new Iso(urlClassToUrlObject, urlObjectToUrlClass);
 const urlObjectLens = urlObjectIso.asLens();
 
