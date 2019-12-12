@@ -50,7 +50,7 @@ type URLObject = Pick<
 >;
 
 // TODO: pick helper
-const urlToUrlObject = ({
+const urlClassToUrlObject = ({
     hash,
     hostname,
     password,
@@ -90,19 +90,21 @@ const urlObjectToUrlString = (urlObject: URLObject): string =>
         auth: createAuthForFormat(urlObject),
     });
 
-const urlStringToUrl = (s: string): urlHelpers.URL => new urlHelpers.URL(s);
+const urlStringToUrlClass = (s: string): urlHelpers.URL => new urlHelpers.URL(s);
 
 // Workaround for
 // https://github.com/whatwg/url/issues/354
 // https://github.com/nodejs/node/pull/28482
 // https://github.com/nodejs/node/issues/25099
 // https://stackoverflow.com/questions/55867415/create-empty-url-object-from-scratch-in-javascript
-const urlObjectToUrl = pipe(
+const urlObjectToUrlClass = pipe(
     urlObjectToUrlString,
-    urlStringToUrl,
+    urlStringToUrlClass,
 );
 
-const urlObjectLens = new Lens(urlToUrlObject, urlObject => () => urlObjectToUrl(urlObject));
+const urlObjectLens = new Lens(urlClassToUrlObject, urlObject => () =>
+    urlObjectToUrlClass(urlObject),
+);
 
 // TODO
 // This is a workaround for binding
