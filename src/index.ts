@@ -135,11 +135,6 @@ export const addSearchParamsInUrl = pipe(
 
 type PathObject = Pick<URLObject, 'pathname' | 'searchParams'>;
 const pathObjectLens = Lens.fromProps<URLObject>()(['pathname', 'searchParams']);
-export const replacePathObjectInURLObject = modify(pathObjectLens);
-export const replacePathObjectInUrl = pipe(
-    replacePathObjectInURLObject,
-    modifyUrl,
-);
 
 const pathObjectToString = ({ pathname, searchParams }: PathObject): string =>
     `${pathname}${searchParams.toString()}`;

@@ -8,7 +8,6 @@ import {
     replaceHashInUrl,
     replacePathInUrl,
     replacePathnameInUrl,
-    replacePathObjectInUrl,
     replaceSearchParamsInUrl,
 } from './index';
 
@@ -20,6 +19,31 @@ assert.deepEqual(
     }))('https://foo.com/bar'),
     right('https://foo.com/foo?a=b'),
 );
+assert.deepEqual(
+    modifyUrl(urlObject => ({
+        ...urlObject,
+        pathname: '/bar',
+        searchParams: new urlHelpers.URLSearchParams(),
+    }))('https://foo.com/foo?example'),
+    right('https://foo.com/bar'),
+);
+assert.deepEqual(
+    modifyUrl(urlObject => ({
+        ...urlObject,
+        pathname: '',
+        searchParams: new urlHelpers.URLSearchParams(),
+    }))('https://foo.com/foo?example'),
+    right('https://foo.com/'),
+);
+// TODO: or null?
+// assert.deepEqual(
+//     modifyUrl(urlObject => ({
+//         ...urlObject,
+//         pathname: null,
+//         searchParams: new urlHelpers.URLSearchParams(),
+//     }))('https://foo.com/foo?example'),
+//     right('https://foo.com/'),
+// ),
 
 assert.strictEqual(
     replaceSearchParamsInUrl(() => new urlHelpers.URLSearchParams({}))('INVALID')._tag,
@@ -50,29 +74,6 @@ assert.deepEqual(
     addSearchParamsInUrl(new urlHelpers.URLSearchParams({ c: 'd' }))('http://foo.com/?a=b&b=c'),
     right('http://foo.com/?a=b&b=c&c=d'),
 );
-
-assert.deepEqual(
-    replacePathObjectInUrl(() => ({
-        pathname: '/bar',
-        searchParams: new urlHelpers.URLSearchParams(),
-    }))('https://foo.com/foo?example'),
-    right('https://foo.com/bar'),
-);
-assert.deepEqual(
-    replacePathObjectInUrl(() => ({
-        pathname: '',
-        searchParams: new urlHelpers.URLSearchParams(),
-    }))('https://foo.com/foo?example'),
-    right('https://foo.com/'),
-);
-// TODO: or null?
-// assert.deepEqual(
-//     replacePathObjectInUrl(() => ({
-//         pathname: null,
-//         searchParams: new urlHelpers.URLSearchParams(),
-//     }))('https://foo.com/foo?example'),
-//     right('https://foo.com/'),
-// ),
 
 assert.deepEqual(
     replacePathInUrl(() => '/bar')('https://foo.com/foo?example'),
