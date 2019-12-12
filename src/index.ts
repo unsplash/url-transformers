@@ -3,15 +3,16 @@ import * as t from 'io-ts';
 import { Lens } from 'monocle-ts';
 import { pipe, pipeWith } from 'pipe-ts';
 import * as urlHelpers from 'url';
+import { URL, URLSearchParams } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { isNonEmptyString } from './helpers/other';
 
-const urlClassT = new t.Type<urlHelpers.URL, string, string>(
+const urlClassT = new t.Type<URL, string, string>(
     'URL',
-    (value): value is urlHelpers.URL => value instanceof urlHelpers.URL,
+    (value): value is URL => value instanceof URL,
     (string, context) =>
         pipeWith(
-            tryCatch(() => new urlHelpers.URL(string), error => error),
+            tryCatch(() => new URL(string), error => error),
             fold(() => t.failure(string, context), t.success),
         ),
     urlClass => urlClass.toString(),
@@ -45,8 +46,9 @@ We have to create an immutable intermediate object. That's what `URLObject` is f
 // We omit some properties since they're just serialized versions of other properties, which only
 // make sense for a mutable API.
 type URLObject = Pick<
-    urlHelpers.URL,
-    Exclude<keyof urlHelpers.URL, 'toJSON' | 'toString' | 'search' | 'href' | 'origin' | 'host'>
+    URL,
+    // TODO: whitelist instead of blacklist? like format
+    Exclude<keyof URL, 'toJSON' | 'toString' | 'search' | 'href' | 'origin' | 'host'>
 >;
 
 // TODO: pick helper
@@ -59,7 +61,7 @@ const urlClassToUrlObject = ({
     protocol,
     searchParams,
     username,
-}: urlHelpers.URL): URLObject => ({
+}: URL): URLObject => ({
     hash,
     hostname,
     password,
@@ -73,7 +75,7 @@ const urlClassToUrlObject = ({
 const createAuthForFormat = ({
     username,
     password,
-}: Pick<urlHelpers.URL, 'username' | 'password'>): string | undefined => {
+}: Pick<URL, 'username' | 'password'>): string | undefined => {
     if (username !== '') {
         const parts = [username, ...(password === undefined ? [] : [password])];
         return parts.join(':');
@@ -82,15 +84,39 @@ const createAuthForFormat = ({
     }
 };
 
-const urlObjectToUrlString = (urlObject: URLObject): string =>
-    urlHelpers.format({
-        // TODO: omit here, e.g. `username`, `searchParams`
-        ...urlObject,
-        search: urlObject.searchParams.toString(),
-        auth: createAuthForFormat(urlObject),
-    });
+type FormatInput = Pick<
+    urlHelpers.UrlObject,
+    'auth' | 'hash' | 'hostname' | 'pathname' | 'port' | 'protocol' | 'search'
+>;
 
-const urlStringToUrlClass = (s: string): urlHelpers.URL => new urlHelpers.URL(s);
+const urlObjectToFormatInput = ({
+    hash,
+    hostname,
+    password,
+    pathname,
+    port,
+    protocol,
+    searchParams,
+    username,
+}: URLObject): FormatInput => ({
+    auth: createAuthForFormat({ username, password }),
+    hash,
+    hostname,
+    pathname,
+    port,
+    protocol,
+    search: searchParams.toString(),
+    // TODO: ?
+    // https://devdocs.io/node/url#url_urlobject_slashes
+    // slashes: true
+});
+
+const urlObjectToUrlString = pipe(
+    urlObjectToFormatInput,
+    urlHelpers.format,
+);
+
+const urlStringToUrlClass = (s: string): URL => new URL(s);
 
 // Workaround for
 // https://github.com/whatwg/url/issues/354
@@ -127,9 +153,9 @@ export const replaceSearchParamsInUrl = pipe(
     modifyUrl,
 );
 
-export const addSearchParamsToURLObject = (searchParamsToAdd: urlHelpers.URLSearchParams) =>
+export const addSearchParamsToURLObject = (searchParamsToAdd: URLSearchParams) =>
     replaceSearchParamsInURLObject(
-        prev => new urlHelpers.URLSearchParams([...prev.entries(), ...searchParamsToAdd.entries()]),
+        prev => new URLSearchParams([...prev.entries(), ...searchParamsToAdd.entries()]),
     );
 export const addSearchParamsInUrl = pipe(
     addSearchParamsToURLObject,
@@ -144,7 +170,7 @@ const pathObjectToString = ({ pathname, searchParams }: PathObject): string =>
 const pathStringToObject = (s: string): PathObject => {
     // TODO: assert
     const [, pathname, search] = s.match(/(.*)\??(.*)/)!;
-    return { pathname, searchParams: new urlHelpers.URLSearchParams(search) };
+    return { pathname, searchParams: new URLSearchParams(search) };
 };
 const pathLens = pathObjectLens.compose(
     new Lens(pathObjectToString, s => () => pathStringToObject(s)),

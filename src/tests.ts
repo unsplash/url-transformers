@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { right } from 'fp-ts/lib/Either';
 import { pipe } from 'pipe-ts';
-import * as urlHelpers from 'url';
+import { URL, URLSearchParams } from 'url';
 import {
     addSearchParamsInUrl,
     appendPathnameToUrl,
@@ -19,8 +19,8 @@ assert.deepEqual(
     modifyUrlClass(urlObject => ({
         ...urlObject,
         pathname: '/foo',
-        searchParams: new urlHelpers.URLSearchParams({ a: 'b' }),
-    }))(new urlHelpers.URL('https://foo.com/bar')).toString(),
+        searchParams: new URLSearchParams({ a: 'b' }),
+    }))(new URL('https://foo.com/bar')).toString(),
     'https://foo.com/foo?a=b',
 );
 
@@ -28,7 +28,7 @@ assert.deepEqual(
     modifyUrl(urlObject => ({
         ...urlObject,
         pathname: '/foo',
-        searchParams: new urlHelpers.URLSearchParams({ a: 'b' }),
+        searchParams: new URLSearchParams({ a: 'b' }),
     }))('https://foo.com/bar'),
     right('https://foo.com/foo?a=b'),
 );
@@ -37,39 +37,34 @@ assert.deepEqual(
     modifyUrl(
         pipe(
             replacePathnameInURLObject(() => '/foo'),
-            replaceSearchParamsInURLObject(() => new urlHelpers.URLSearchParams({ a: 'b' })),
+            replaceSearchParamsInURLObject(() => new URLSearchParams({ a: 'b' })),
         ),
     )('https://foo.com/bar'),
     right('https://foo.com/foo?a=b'),
 );
 
-assert.strictEqual(
-    replaceSearchParamsInUrl(() => new urlHelpers.URLSearchParams({}))('INVALID')._tag,
-    'Left',
-);
+assert.strictEqual(replaceSearchParamsInUrl(() => new URLSearchParams({}))('INVALID')._tag, 'Left');
 assert.deepEqual(
-    replaceSearchParamsInUrl(() => new urlHelpers.URLSearchParams({ foo: '1' }))(
+    replaceSearchParamsInUrl(() => new URLSearchParams({ foo: '1' }))(
         'http://foo.com/?string=string',
     ),
     right('http://foo.com/?foo=1'),
 );
 assert.deepEqual(
-    replaceSearchParamsInUrl(() => new urlHelpers.URLSearchParams())(
-        'http://foo.com/?string=string',
-    ),
+    replaceSearchParamsInUrl(() => new URLSearchParams())('http://foo.com/?string=string'),
     right('http://foo.com/'),
 );
 
 assert.deepEqual(
-    addSearchParamsInUrl(new urlHelpers.URLSearchParams({ string: 'string' }))('http://foo.com/'),
+    addSearchParamsInUrl(new URLSearchParams({ string: 'string' }))('http://foo.com/'),
     right('http://foo.com/?string=string'),
 );
 assert.deepEqual(
-    addSearchParamsInUrl(new urlHelpers.URLSearchParams({ a: 'b' }))('http://foo:bar@baz.com/'),
+    addSearchParamsInUrl(new URLSearchParams({ a: 'b' }))('http://foo:bar@baz.com/'),
     right('http://foo:bar@baz.com/?a=b'),
 );
 assert.deepEqual(
-    addSearchParamsInUrl(new urlHelpers.URLSearchParams({ c: 'd' }))('http://foo.com/?a=b&b=c'),
+    addSearchParamsInUrl(new URLSearchParams({ c: 'd' }))('http://foo.com/?a=b&b=c'),
     right('http://foo.com/?a=b&b=c&c=d'),
 );
 
