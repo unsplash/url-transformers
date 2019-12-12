@@ -1,4 +1,6 @@
+import * as A from 'fp-ts/lib/Array';
 import { fold, map, tryCatch } from 'fp-ts/lib/Either';
+import * as O from 'fp-ts/lib/Option';
 import * as t from 'io-ts';
 import { Lens } from 'monocle-ts';
 import { pipe, pipeWith } from 'pipe-ts';
@@ -72,12 +74,12 @@ const urlClassToUrlObject = ({
     username,
 });
 
-const createAuthForFormat = ({
+export const createAuthForFormat = ({
     username,
     password,
 }: Pick<URL, 'username' | 'password'>): string | undefined => {
     if (username !== '') {
-        const parts = [username, ...(password === undefined ? [] : [password])];
+        const parts = [username, ...(password === '' ? [] : [password])];
         return parts.join(':');
     } else {
         return undefined;
@@ -167,9 +169,15 @@ const pathObjectLens = Lens.fromProps<URLObject>()(['pathname', 'searchParams'])
 
 const pathObjectToString = ({ pathname, searchParams }: PathObject): string =>
     `${pathname}${searchParams.toString()}`;
-const pathStringToObject = (s: string): PathObject => {
-    // TODO: assert
-    const [, pathname, search] = s.match(/(.*)\??(.*)/)!;
+export const pathStringToObject = (s: string): PathObject => {
+    const searchRegEx = /\?(.*)/;
+    const pathname = s.replace(searchRegEx, '');
+    const search = pipeWith(
+        O.fromNullable(s.match(searchRegEx)),
+        O.chain(A.head),
+        // TODO: assert instead?
+        O.getOrElse(() => ''),
+    );
     return { pathname, searchParams: new URLSearchParams(search) };
 };
 const pathLens = pathObjectLens.compose(
