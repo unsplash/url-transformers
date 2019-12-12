@@ -2,7 +2,7 @@ import * as A from 'fp-ts/lib/Array';
 import { fold, map, tryCatch } from 'fp-ts/lib/Either';
 import * as O from 'fp-ts/lib/Option';
 import * as t from 'io-ts';
-import { Lens } from 'monocle-ts';
+import { Iso, Lens } from 'monocle-ts';
 import { pipe, pipeWith } from 'pipe-ts';
 import * as urlHelpers from 'url';
 import { URL, URLSearchParams } from 'url';
@@ -133,9 +133,8 @@ const urlObjectToUrlClass = pipe(
 // TODO: Iso instead?
 // https://functionalprogramming.slack.com/archives/C7BBY9A95/p1576138710461900?thread_ts=1576091116.461600&cid=C7BBY9A95
 // https://gcanti.github.io/monocle-ts/modules/index.ts.html#iso-class
-const urlObjectLens = new Lens(urlClassToUrlObject, urlObject => () =>
-    urlObjectToUrlClass(urlObject),
-);
+const urlObjectIso = new Iso(urlClassToUrlObject, urlObjectToUrlClass);
+const urlObjectLens = urlObjectIso.asLens();
 
 // TODO
 // This is a workaround for binding
@@ -183,9 +182,8 @@ export const pathStringToObject = (s: string): PathObject => {
     );
     return { pathname, searchParams: new URLSearchParams(search) };
 };
-const pathLens = pathObjectLens.compose(
-    new Lens(pathObjectToString, s => () => pathStringToObject(s)),
-);
+const pathIso = new Iso(pathObjectToString, pathStringToObject);
+const pathLens = pathObjectLens.compose(pathIso.asLens());
 
 export const replacePathInURLObject = modify(pathLens);
 export const replacePathInUrl = pipe(
