@@ -15,7 +15,8 @@ import {
     replacePathnameInURLObject,
     replaceSearchParamsInUrl,
     replaceSearchParamsInURLObject,
-} from './index';
+} from '../index';
+import './helpers';
 
 assert.deepEqual(createAuthForFormat({ username: '', password: '' }), undefined);
 assert.deepEqual(createAuthForFormat({ username: 'a', password: '' }), 'a');

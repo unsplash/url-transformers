@@ -9,7 +9,7 @@
   "version": "0.0.6",
   "scripts": {
     "compile": "rm -rf ./target/ && tsc",
-    "test": "npm run compile && node --require source-map-support/register ./target/tests.js",
+    "test": "npm run compile && node --require source-map-support/register ./target/tests/index.js",
     "format": "prettier --write './**/*.{ts,js,json,md}' '.prettierrc'",
     "prepublishOnly": "npm run compile"
   },

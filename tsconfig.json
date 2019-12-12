@@ -8,7 +8,8 @@
         "outDir": "./target/",
         "rootDir": "./src/",
         "declaration": true,
+        // TODO: ?
         "downlevelIteration": true
     },
-    "files": ["./src/index.ts", "./src/tests.ts"]
+    "files": ["./src/index.ts", "./src/tests/index.ts"]
 }
