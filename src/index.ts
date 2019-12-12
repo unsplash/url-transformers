@@ -183,7 +183,7 @@ export const pathStringToObject = (s: string): PathObject => {
     return { pathname, searchParams: new URLSearchParams(search) };
 };
 const pathIso = new Iso(pathObjectToString, pathStringToObject);
-const pathLens = pathObjectLens.compose(pathIso.asLens());
+const pathLens = pathObjectLens.composeIso(pathIso);
 
 export const replacePathInURLObject = modify(pathLens);
 export const replacePathInUrl = pipe(
