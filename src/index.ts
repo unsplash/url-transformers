@@ -50,8 +50,8 @@ const convertNodeUrl = ({
 });
 
 type MapParsedUrlFn = ({ parsedUrl }: { parsedUrl: ParsedUrl }) => ParsedUrl;
-export const mapParsedUrl = (f: MapParsedUrlFn): MapParsedUrlFn => ({ parsedUrl }) =>
-    f({ parsedUrl });
+export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => ({ parsedUrl }) =>
+    fn({ parsedUrl });
 
 type MapUrlFn = ({ url }: { url: string }) => string;
 export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn =>
