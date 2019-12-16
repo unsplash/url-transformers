@@ -55,7 +55,8 @@ type MapUrlFn = ({ url }: { url: string }) => string;
 export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn =>
     pipe(
         ({ url }) => parseUrlWithQueryString(url),
-        parsedUrl => fn({ parsedUrl: convertNodeUrl(parsedUrl) }),
+        convertNodeUrl,
+        parsedUrl => fn({ parsedUrl }),
         urlHelpers.format,
     );
 
