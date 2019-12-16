@@ -2,7 +2,7 @@ import { pipe, pipeWith } from 'pipe-ts';
 import { ParsedUrlQueryInput } from 'querystring';
 import * as urlHelpers from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
-import { flipCurried, isNonEmptyString } from './helpers/other';
+import { isNonEmptyString } from './helpers/other';
 
 interface NodeUrlObjectWithParsedQuery extends urlHelpers.UrlObject {
     query: ParsedUrlQueryInput | null;
@@ -71,11 +71,9 @@ export const replaceQueryInParsedUrl = ({
     query: newQuery instanceof Function ? newQuery(parsedUrl.query) : newQuery,
 });
 
-export const replaceQueryInUrl = flipCurried(
-    pipe(
-        replaceQueryInParsedUrl,
-        mapUrl,
-    ),
+export const replaceQueryInUrl = pipe(
+    replaceQueryInParsedUrl,
+    mapUrl,
 );
 
 export const addQueryToParsedUrl = ({
@@ -87,11 +85,9 @@ export const addQueryToParsedUrl = ({
         newQuery: existingQuery => ({ ...existingQuery, ...queryToAppend }),
     });
 
-export const addQueryToUrl = flipCurried(
-    pipe(
-        addQueryToParsedUrl,
-        mapUrl,
-    ),
+export const addQueryToUrl = pipe(
+    addQueryToParsedUrl,
+    mapUrl,
 );
 
 type ParsedPath = Pick<ParsedUrl, 'query' | 'pathname'>;
@@ -119,11 +115,9 @@ export const replacePathInParsedUrl = ({
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
     );
 
-export const replacePathInUrl = flipCurried(
-    pipe(
-        replacePathInParsedUrl,
-        mapUrl,
-    ),
+export const replacePathInUrl = pipe(
+    replacePathInParsedUrl,
+    mapUrl,
 );
 
 export const replacePathnameInParsedUrl = ({
@@ -135,11 +129,9 @@ export const replacePathnameInParsedUrl = ({
     pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
 });
 
-export const replacePathnameInUrl = flipCurried(
-    pipe(
-        replacePathnameInParsedUrl,
-        mapUrl,
-    ),
+export const replacePathnameInUrl = pipe(
+    replacePathnameInParsedUrl,
+    mapUrl,
 );
 
 export const appendPathnameToParsedUrl = ({
@@ -159,11 +151,9 @@ export const appendPathnameToParsedUrl = ({
         },
     });
 
-export const appendPathnameToUrl = flipCurried(
-    pipe(
-        appendPathnameToParsedUrl,
-        mapUrl,
-    ),
+export const appendPathnameToUrl = pipe(
+    appendPathnameToParsedUrl,
+    mapUrl,
 );
 
 export const replaceHashInParsedUrl = ({
@@ -175,9 +165,7 @@ export const replaceHashInParsedUrl = ({
     hash: newHash instanceof Function ? newHash(parsedUrl.hash) : newHash,
 });
 
-export const replaceHashInUrl = flipCurried(
-    pipe(
-        replaceHashInParsedUrl,
-        mapUrl,
-    ),
+export const replaceHashInUrl = pipe(
+    replaceHashInParsedUrl,
+    mapUrl,
 );

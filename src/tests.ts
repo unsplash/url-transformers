@@ -54,87 +54,87 @@ assert.deepEqual(
 
 assert.strictEqual(
     replaceQueryInUrl({
-        url: '/foo?string=string&number=1&boolean=true&strings=string1&strings=string2',
-    })({
         newQuery: { foo: 1 },
+    })({
+        url: '/foo?string=string&number=1&boolean=true&strings=string1&strings=string2',
     }),
     '/foo?foo=1',
 );
 
 assert.strictEqual(
     replaceQueryInUrl({
-        url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
-    })({
         newQuery: { foo: 1 },
+    })({
+        url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
     }),
     'http://foo.com/?foo=1',
 );
 assert.strictEqual(
     replaceQueryInUrl({
-        url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
-    })({
         newQuery: {},
+    })({
+        url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
     }),
     'http://foo.com/',
 );
 
 assert.strictEqual(
-    addQueryToUrl({ url: 'http://foo.com/' })({
+    addQueryToUrl({
         queryToAppend: {
             string: 'string',
             number: 1,
             boolean: true,
             strings: ['string1', 'string2'],
         },
-    }),
+    })({ url: 'http://foo.com/' }),
     'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
 );
 assert.strictEqual(
-    addQueryToUrl({ url: 'http://foo:bar@baz.com/' })({
+    addQueryToUrl({
         queryToAppend: { a: 'b' },
-    }),
+    })({ url: 'http://foo:bar@baz.com/' }),
     'http://foo:bar@baz.com/?a=b',
 );
 assert.strictEqual(
-    addQueryToUrl({ url: 'http://foo.com/?a=b&b=c' })({
+    addQueryToUrl({
         queryToAppend: { c: 'd' },
-    }),
+    })({ url: 'http://foo.com/?a=b&b=c' }),
     'http://foo.com/?a=b&b=c&c=d',
 );
 
 assert.strictEqual(
-    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: '/bar' }),
+    replacePathInUrl({ newPath: '/bar' })({ url: 'https://foo.com/foo?example' }),
     'https://foo.com/bar',
 );
 assert.strictEqual(
-    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: null }),
+    replacePathInUrl({ newPath: null })({ url: 'https://foo.com/foo?example' }),
     'https://foo.com',
 );
 
 assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: '/bar' }),
+    replacePathnameInUrl({ newPathname: '/bar' })({ url: 'https://foo.com/foo' }),
     'https://foo.com/bar',
 );
 assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: null }),
+    replacePathnameInUrl({ newPathname: null })({ url: 'https://foo.com/foo' }),
     'https://foo.com',
 );
 assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo?example=' })({ newPathname: '/bar' }),
+    replacePathnameInUrl({ newPathname: '/bar' })({ url: 'https://foo.com/foo?example=' }),
     'https://foo.com/bar?example=',
 );
 
-assert.strictEqual(appendPathnameToUrl({ url: '/foo' })({ pathnameToAppend: '/bar' }), '/foo/bar');
-assert.strictEqual(appendPathnameToUrl({ url: '/foo/' })({ pathnameToAppend: '/bar' }), '/foo/bar');
+assert.strictEqual(appendPathnameToUrl({ pathnameToAppend: '/bar' })({ url: '/foo' }), '/foo/bar');
+assert.strictEqual(appendPathnameToUrl({ pathnameToAppend: '/bar' })({ url: '/foo/' }), '/foo/bar');
 assert.strictEqual(
-    appendPathnameToUrl({ url: '/foo?example=' })({ pathnameToAppend: '/bar' }),
+    appendPathnameToUrl({ pathnameToAppend: '/bar' })({ url: '/foo?example=' }),
     '/foo/bar?example=',
 );
 assert.strictEqual(
-    appendPathnameToUrl({ url: '/@foo' })({ pathnameToAppend: '/bar' }),
+    appendPathnameToUrl({ pathnameToAppend: '/bar' })({ url: '/@foo' }),
     '/@foo/bar',
 );
 
-assert.strictEqual(replaceHashInUrl({ url: '/foo' })({ newHash: '#bar' }), '/foo#bar');
-assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: null }), '/foo');
-assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: '#baz' }), '/foo#baz');
+assert.strictEqual(replaceHashInUrl({ newHash: '#bar' })({ url: '/foo' }), '/foo#bar');
+assert.strictEqual(replaceHashInUrl({ newHash: null })({ url: '/foo#bar' }), '/foo');
+assert.strictEqual(replaceHashInUrl({ newHash: '#baz' })({ url: '/foo#bar' }), '/foo#baz');
