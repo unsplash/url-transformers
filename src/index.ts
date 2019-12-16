@@ -22,9 +22,11 @@ const parseUrlWithQueryString = (url: string) =>
     );
 
 // We omit some properties since they're just serialized versions of other properties.
-type ParsedUrl = Pick<
-    NodeUrlObjectWithParsedQuery,
-    'auth' | 'hash' | 'hostname' | 'pathname' | 'port' | 'protocol' | 'query' | 'slashes'
+type ParsedUrl = Required<
+    Pick<
+        NodeUrlObjectWithParsedQuery,
+        'auth' | 'hash' | 'hostname' | 'pathname' | 'port' | 'protocol' | 'query' | 'slashes'
+    >
 >;
 
 const convertNodeUrl = ({
