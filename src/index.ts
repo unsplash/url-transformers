@@ -49,24 +49,21 @@ const convertNodeUrl = ({
     slashes,
 });
 
-type MapParsedUrlFn = ({ parsedUrl }: { parsedUrl: ParsedUrl }) => ParsedUrl;
-export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => ({ parsedUrl }) =>
-    fn({ parsedUrl });
+type MapParsedUrlFn = (parsedUrl: ParsedUrl) => ParsedUrl;
+export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => parsedUrl => fn(parsedUrl);
 
-type MapUrlFn = ({ url }: { url: string }) => string;
+type MapUrlFn = (url: string) => string;
 export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn =>
     pipe(
-        ({ url }) => parseUrlWithQueryString(url),
+        parseUrlWithQueryString,
         convertNodeUrl,
-        parsedUrl => fn({ parsedUrl }),
+        fn,
         urlHelpers.format,
     );
 
-export const replaceQueryInParsedUrl = ({
-    newQuery,
-}: {
-    newQuery: Update<ParsedUrl['query']>;
-}): MapParsedUrlFn => ({ parsedUrl }) => ({
+export const replaceQueryInParsedUrl = (
+    newQuery: Update<ParsedUrl['query']>,
+): MapParsedUrlFn => parsedUrl => ({
     ...parsedUrl,
     query: newQuery instanceof Function ? newQuery(parsedUrl.query) : newQuery,
 });
@@ -76,14 +73,8 @@ export const replaceQueryInUrl = pipe(
     mapUrl,
 );
 
-export const addQueryToParsedUrl = ({
-    queryToAppend,
-}: {
-    queryToAppend: ParsedUrl['query'];
-}): MapParsedUrlFn =>
-    replaceQueryInParsedUrl({
-        newQuery: existingQuery => ({ ...existingQuery, ...queryToAppend }),
-    });
+export const addQueryToParsedUrl = (queryToAppend: ParsedUrl['query']): MapParsedUrlFn =>
+    replaceQueryInParsedUrl(existingQuery => ({ ...existingQuery, ...queryToAppend }));
 
 export const addQueryToUrl = pipe(
     addQueryToParsedUrl,
@@ -104,11 +95,9 @@ const getParsedPathFromString = (maybePath: NodeUrlObjectWithParsedQuery['path']
         maybe => getOrElseMaybe(maybe, () => ({ query: null, pathname: null })),
     );
 
-export const replacePathInParsedUrl = ({
-    newPath,
-}: {
-    newPath: Update<NodeUrlObjectWithParsedQuery['path']>;
-}): MapParsedUrlFn => ({ parsedUrl }) =>
+export const replacePathInParsedUrl = (
+    newPath: Update<NodeUrlObjectWithParsedQuery['path']>,
+): MapParsedUrlFn => parsedUrl =>
     pipeWith(
         newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
         getParsedPathFromString,
@@ -120,11 +109,9 @@ export const replacePathInUrl = pipe(
     mapUrl,
 );
 
-export const replacePathnameInParsedUrl = ({
-    newPathname,
-}: {
-    newPathname: Update<ParsedUrl['pathname']>;
-}): MapParsedUrlFn => ({ parsedUrl }) => ({
+export const replacePathnameInParsedUrl = (
+    newPathname: Update<ParsedUrl['pathname']>,
+): MapParsedUrlFn => parsedUrl => ({
     ...parsedUrl,
     pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
 });
@@ -134,21 +121,15 @@ export const replacePathnameInUrl = pipe(
     mapUrl,
 );
 
-export const appendPathnameToParsedUrl = ({
-    pathnameToAppend,
-}: {
-    pathnameToAppend: string;
-}): MapParsedUrlFn =>
-    replacePathnameInParsedUrl({
-        newPathname: prevPathname => {
-            const pathnameParts = pipeWith(mapMaybe(prevPathname, getPartsFromPathname), maybe =>
-                getOrElseMaybe(maybe, () => []),
-            );
-            const pathnamePartsToAppend = getPartsFromPathname(pathnameToAppend);
-            const newPathnameParts = [...pathnameParts, ...pathnamePartsToAppend];
-            const newPathname = getPathnameFromParts(newPathnameParts);
-            return newPathname;
-        },
+export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUrlFn =>
+    replacePathnameInParsedUrl(prevPathname => {
+        const pathnameParts = pipeWith(mapMaybe(prevPathname, getPartsFromPathname), maybe =>
+            getOrElseMaybe(maybe, () => []),
+        );
+        const pathnamePartsToAppend = getPartsFromPathname(pathnameToAppend);
+        const newPathnameParts = [...pathnameParts, ...pathnamePartsToAppend];
+        const newPathname = getPathnameFromParts(newPathnameParts);
+        return newPathname;
     });
 
 export const appendPathnameToUrl = pipe(
@@ -156,11 +137,9 @@ export const appendPathnameToUrl = pipe(
     mapUrl,
 );
 
-export const replaceHashInParsedUrl = ({
-    newHash,
-}: {
-    newHash: Update<ParsedUrl['hash']>;
-}): MapParsedUrlFn => ({ parsedUrl }) => ({
+export const replaceHashInParsedUrl = (
+    newHash: Update<ParsedUrl['hash']>,
+): MapParsedUrlFn => parsedUrl => ({
     ...parsedUrl,
     hash: newHash instanceof Function ? newHash(parsedUrl.hash) : newHash,
 });
