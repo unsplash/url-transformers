@@ -167,7 +167,7 @@ type PathObject = Pick<URLObject, 'pathname' | 'searchParams'>;
 const pathObjectLens = Lens.fromProps<URLObject>()(['pathname', 'searchParams']);
 
 const pathObjectToString = ({ pathname, searchParams }: PathObject): string =>
-    `${pathname}${searchParams.toString()}`;
+    `${pathname}?${searchParams.toString()}`;
 export const pathStringToObject = (s: string): PathObject => {
     const searchRegEx = /\?(.*)/;
     const pathname = s.replace(searchRegEx, '');
