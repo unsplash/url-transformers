@@ -54,6 +54,15 @@ assert.deepEqual(
 
 assert.strictEqual(
     replaceQueryInUrl({
+        url: '/foo?string=string&number=1&boolean=true&strings=string1&strings=string2',
+    })({
+        newQuery: { foo: 1 },
+    }),
+    '/foo?foo=1',
+);
+
+assert.strictEqual(
+    replaceQueryInUrl({
         url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
     })({
         newQuery: { foo: 1 },
