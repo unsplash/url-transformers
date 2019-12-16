@@ -1,12 +1,8 @@
 import { pipe, pipeWith } from 'pipe-ts';
-import { ParsedUrlQueryInput } from 'querystring';
 import * as urlHelpers from 'url';
+import { URL, URLSearchParams } from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { isNonEmptyString } from './helpers/other';
-
-interface NodeUrlObjectWithParsedQuery extends urlHelpers.UrlObject {
-    query: ParsedUrlQueryInput | null;
-}
 
 type Update<T> = T | ((prev: T) => T);
 
@@ -14,115 +10,206 @@ const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
 
 const getPartsFromPathname = (pathname: string) => pathname.split('/').filter(isNonEmptyString);
 
-const parseUrlWithQueryString = (url: string) =>
-    urlHelpers.parse(
-        url,
-        // Parse the query string
-        true,
-    );
+/*
+We can't create copies of a `URL`:
 
+```ts
+(Object.assign({}, new URL('https://foo.bar/'), {pathname: '/foo'})).toString()
+// => '[object Object]'
+```
+
+This is because `URL` is designed to be operated on via mutations:
+
+```ts
+(Object.assign(new URL('https://foo.bar/'), {pathname: '/foo'})).toString()
+// => 'https://foo.bar/foo'
+```
+
+But we want to operate on it immutably.
+
+Given this, how can we parse/decode a URL, modify it immutably, and then
+serialize/format/stringify/encode it again?
+
+We have to create an immutable intermediate object. That's what `UrlObject` is for.
+*/
 // We omit some properties since they're just serialized versions of other properties.
-type ParsedUrl = Required<
+type UrlObject = Required<
     Pick<
-        NodeUrlObjectWithParsedQuery,
-        'auth' | 'hash' | 'hostname' | 'pathname' | 'port' | 'protocol' | 'query' | 'slashes'
+        URL,
+        | 'hash'
+        | 'hostname'
+        | 'password'
+        | 'pathname'
+        | 'port'
+        | 'protocol'
+        | 'searchParams'
+        | 'username'
     >
 >;
-
-const convertNodeUrl = ({
-    auth,
+// TODO: pick helper
+const urlClassToObject = ({
     hash,
     hostname,
+    password,
     pathname,
     port,
     protocol,
-    query,
-    slashes,
-}: urlHelpers.UrlWithParsedQuery): ParsedUrl => ({
-    auth,
+    searchParams,
+    username,
+}: URL): UrlObject => ({
     hash,
     hostname,
+    password,
     pathname,
     port,
     protocol,
-    query,
-    slashes,
+    searchParams,
+    username,
 });
 
-type MapParsedUrlFn = (parsedUrl: ParsedUrl) => ParsedUrl;
-export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => parsedUrl => fn(parsedUrl);
+type MapUrlObjectFn = (urlObject: UrlObject) => UrlObject;
+export const mapUrlClass = (fn: MapUrlObjectFn) =>
+    pipe(
+        urlClassToObject,
+        fn,
+        urlObjectToClass,
+    );
+
+export const mapUrlObject = (fn: MapUrlObjectFn): MapUrlObjectFn => urlObject => fn(urlObject);
+
+const urlStringToClass = (urlString: string) => new URL(urlString);
+
+export const createAuthForFormat = ({
+    username,
+    password,
+}: Pick<URL, 'username' | 'password'>): string | undefined => {
+    if (username !== '') {
+        const parts = [username, ...(password === '' ? [] : [password])];
+        return parts.join(':');
+    } else {
+        return undefined;
+    }
+};
+
+// Workaround for
+// https://github.com/whatwg/url/issues/354
+// https://github.com/nodejs/node/pull/28482
+// https://github.com/nodejs/node/issues/25099
+// https://stackoverflow.com/questions/55867415/create-empty-url-object-from-scratch-in-javascript
+const urlObjectToClass = pipe(
+    ({
+        hash,
+        hostname,
+        password,
+        pathname,
+        port,
+        protocol,
+        searchParams,
+        username,
+    }: UrlObject): string =>
+        urlHelpers.format({
+            auth: createAuthForFormat({ username, password }),
+            hash,
+            hostname,
+            pathname,
+            port,
+            protocol,
+            search: searchParams.toString(),
+            // TODO: ?
+            // https://devdocs.io/node/url#url_urlobject_slashes
+            // slashes: true
+        }),
+
+    urlStringToClass,
+);
+
+const urlObjectToString = pipe(
+    urlObjectToClass,
+    url => url.toString(),
+);
+
+const urlStringToObject = pipe(
+    urlStringToClass,
+    urlClassToObject,
+);
 
 type MapUrlFn = (url: string) => string;
-export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn =>
+export const mapUrl = (fn: MapUrlObjectFn): MapUrlFn =>
     pipe(
-        parseUrlWithQueryString,
-        convertNodeUrl,
+        urlStringToObject,
         fn,
-        urlHelpers.format,
+        urlObjectToString,
     );
 
-export const replaceQueryInParsedUrl = (
-    newQuery: Update<ParsedUrl['query']>,
-): MapParsedUrlFn => parsedUrl => ({
-    ...parsedUrl,
-    query: newQuery instanceof Function ? newQuery(parsedUrl.query) : newQuery,
+export const replaceSearchParamsInUrlObject = (
+    newSearchParams: Update<UrlObject['searchParams']>,
+): MapUrlObjectFn => urlObject => ({
+    ...urlObject,
+    searchParams:
+        newSearchParams instanceof Function
+            ? newSearchParams(urlObject.searchParams)
+            : newSearchParams,
 });
 
-export const replaceQueryInUrl = pipe(
-    replaceQueryInParsedUrl,
+export const replaceSearchParamsInUrl = pipe(
+    replaceSearchParamsInUrlObject,
     mapUrl,
 );
 
-export const addQueryToParsedUrl = (queryToAppend: ParsedUrl['query']): MapParsedUrlFn =>
-    replaceQueryInParsedUrl(existingQuery => ({ ...existingQuery, ...queryToAppend }));
-
-export const addQueryToUrl = pipe(
-    addQueryToParsedUrl,
-    mapUrl,
-);
-
-type ParsedPath = Pick<ParsedUrl, 'query' | 'pathname'>;
-
-const parsePath = pipe(
-    (path: string) => urlHelpers.parse(path, true),
-    ({ query, pathname }): ParsedPath => ({ query, pathname }),
-);
-
-const getParsedPathFromString = (maybePath: NodeUrlObjectWithParsedQuery['path']): ParsedPath =>
-    pipeWith(
-        maybePath,
-        maybe => mapMaybe(maybe, parsePath),
-        maybe => getOrElseMaybe(maybe, () => ({ query: null, pathname: null })),
+export const addSearchParamsToUrlObject = (
+    searchParamsToAppend: UrlObject['searchParams'],
+): MapUrlObjectFn =>
+    replaceSearchParamsInUrlObject(
+        existingSearchParams =>
+            new URLSearchParams([
+                ...existingSearchParams.entries(),
+                ...searchParamsToAppend.entries(),
+            ]),
     );
 
-export const replacePathInParsedUrl = (
-    newPath: Update<NodeUrlObjectWithParsedQuery['path']>,
-): MapParsedUrlFn => parsedUrl =>
+export const addSearchParamsToUrl = pipe(
+    addSearchParamsToUrlObject,
+    mapUrl,
+);
+
+type PathObject = Pick<UrlObject, 'searchParams' | 'pathname'>;
+
+// TODO: workaround for https://github.com/nodejs/node/issues/12682
+const DUMMY_BASE_URL = 'https://foo.bar';
+export const pathStringToObject = pipe(
+    (pathString: string) => new URL(pathString, DUMMY_BASE_URL),
+    ({ searchParams, pathname }): PathObject => ({
+        searchParams: new URLSearchParams([...searchParams.entries()]),
+        pathname,
+    }),
+);
+
+export const replacePathInUrlObject = (newPath: Update<string>): MapUrlObjectFn => urlObject =>
     pipeWith(
-        newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
-        getParsedPathFromString,
-        newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
+        newPath instanceof Function ? newPath(urlObject.pathname) : newPath,
+        pathStringToObject,
+        newPathObject => ({ ...urlObject, ...newPathObject }),
     );
 
 export const replacePathInUrl = pipe(
-    replacePathInParsedUrl,
+    replacePathInUrlObject,
     mapUrl,
 );
 
-export const replacePathnameInParsedUrl = (
-    newPathname: Update<ParsedUrl['pathname']>,
-): MapParsedUrlFn => parsedUrl => ({
-    ...parsedUrl,
-    pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
+export const replacePathnameInUrlObject = (
+    newPathname: Update<UrlObject['pathname']>,
+): MapUrlObjectFn => urlObject => ({
+    ...urlObject,
+    pathname: newPathname instanceof Function ? newPathname(urlObject.pathname) : newPathname,
 });
 
 export const replacePathnameInUrl = pipe(
-    replacePathnameInParsedUrl,
+    replacePathnameInUrlObject,
     mapUrl,
 );
 
-export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUrlFn =>
-    replacePathnameInParsedUrl(prevPathname => {
+export const appendPathnameToUrlObject = (pathnameToAppend: string): MapUrlObjectFn =>
+    replacePathnameInUrlObject(prevPathname => {
         const pathnameParts = pipeWith(mapMaybe(prevPathname, getPartsFromPathname), maybe =>
             getOrElseMaybe(maybe, () => []),
         );
@@ -133,18 +220,18 @@ export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUr
     });
 
 export const appendPathnameToUrl = pipe(
-    appendPathnameToParsedUrl,
+    appendPathnameToUrlObject,
     mapUrl,
 );
 
-export const replaceHashInParsedUrl = (
-    newHash: Update<ParsedUrl['hash']>,
-): MapParsedUrlFn => parsedUrl => ({
-    ...parsedUrl,
-    hash: newHash instanceof Function ? newHash(parsedUrl.hash) : newHash,
+export const replaceHashInUrlObject = (
+    newHash: Update<UrlObject['hash']>,
+): MapUrlObjectFn => urlObject => ({
+    ...urlObject,
+    hash: newHash instanceof Function ? newHash(urlObject.hash) : newHash,
 });
 
 export const replaceHashInUrl = pipe(
-    replaceHashInParsedUrl,
+    replaceHashInUrlObject,
     mapUrl,
 );
