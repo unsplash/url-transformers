@@ -114,3 +114,4 @@ assert.strictEqual(appendPathnameToUrl('/bar')('/@foo'), '/@foo/bar');
 assert.strictEqual(replaceHashInUrl(() => '#bar')('/foo'), '/foo#bar');
 assert.strictEqual(replaceHashInUrl(() => null)('/foo#bar'), '/foo');
 assert.strictEqual(replaceHashInUrl(() => '#baz')('/foo#bar'), '/foo#baz');
+assert.strictEqual(replaceHashInUrl(prev => `${prev}2`)('/foo#bar'), '/foo#bar2');
