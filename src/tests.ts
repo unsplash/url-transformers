@@ -53,20 +53,20 @@ assert.deepEqual(
 );
 
 assert.strictEqual(
-    replaceQueryInUrl({ foo: 1 })(
+    replaceQueryInUrl(() => ({ foo: 1 }))(
         '/foo?string=string&number=1&boolean=true&strings=string1&strings=string2',
     ),
     '/foo?foo=1',
 );
 
 assert.strictEqual(
-    replaceQueryInUrl({ foo: 1 })(
+    replaceQueryInUrl(() => ({ foo: 1 }))(
         'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
     ),
     'http://foo.com/?foo=1',
 );
 assert.strictEqual(
-    replaceQueryInUrl({})(
+    replaceQueryInUrl(() => ({}))(
         'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
     ),
     'http://foo.com/',
@@ -90,13 +90,19 @@ assert.strictEqual(
     'http://foo.com/?a=b&b=c&c=d',
 );
 
-assert.strictEqual(replacePathInUrl('/bar')('https://foo.com/foo?example'), 'https://foo.com/bar');
-assert.strictEqual(replacePathInUrl(null)('https://foo.com/foo?example'), 'https://foo.com');
-
-assert.strictEqual(replacePathnameInUrl('/bar')('https://foo.com/foo'), 'https://foo.com/bar');
-assert.strictEqual(replacePathnameInUrl(null)('https://foo.com/foo'), 'https://foo.com');
 assert.strictEqual(
-    replacePathnameInUrl('/bar')('https://foo.com/foo?example='),
+    replacePathInUrl(() => '/bar')('https://foo.com/foo?example'),
+    'https://foo.com/bar',
+);
+assert.strictEqual(replacePathInUrl(() => null)('https://foo.com/foo?example'), 'https://foo.com');
+
+assert.strictEqual(
+    replacePathnameInUrl(() => '/bar')('https://foo.com/foo'),
+    'https://foo.com/bar',
+);
+assert.strictEqual(replacePathnameInUrl(() => null)('https://foo.com/foo'), 'https://foo.com');
+assert.strictEqual(
+    replacePathnameInUrl(() => '/bar')('https://foo.com/foo?example='),
     'https://foo.com/bar?example=',
 );
 
@@ -105,6 +111,6 @@ assert.strictEqual(appendPathnameToUrl('/bar')('/foo/'), '/foo/bar');
 assert.strictEqual(appendPathnameToUrl('/bar')('/foo?example='), '/foo/bar?example=');
 assert.strictEqual(appendPathnameToUrl('/bar')('/@foo'), '/@foo/bar');
 
-assert.strictEqual(replaceHashInUrl('#bar')('/foo'), '/foo#bar');
-assert.strictEqual(replaceHashInUrl(null)('/foo#bar'), '/foo');
-assert.strictEqual(replaceHashInUrl('#baz')('/foo#bar'), '/foo#baz');
+assert.strictEqual(replaceHashInUrl(() => '#bar')('/foo'), '/foo#bar');
+assert.strictEqual(replaceHashInUrl(() => null)('/foo#bar'), '/foo');
+assert.strictEqual(replaceHashInUrl(() => '#baz')('/foo#bar'), '/foo#baz');

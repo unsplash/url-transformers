@@ -8,7 +8,7 @@ interface NodeUrlObjectWithParsedQuery extends urlHelpers.UrlObject {
     query: ParsedUrlQueryInput | null;
 }
 
-type Update<T> = T | ((prev: T) => T);
+type Update<T> = (prev: T) => T;
 
 const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
 
