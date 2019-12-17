@@ -5,7 +5,7 @@ import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { flipCurried, isNonEmptyString } from './helpers/other';
 
 interface NodeUrlObjectWithParsedQuery extends urlHelpers.UrlObject {
-    query: ParsedUrlQueryInput | null;
+    query: ParsedUrlQueryInput;
 }
 
 type Update<T> = T | ((prev: T) => T);
@@ -105,7 +105,7 @@ const getParsedPathFromString = (maybePath: NodeUrlObjectWithParsedQuery['path']
     pipeWith(
         maybePath,
         maybe => mapMaybe(maybe, parsePath),
-        maybe => getOrElseMaybe(maybe, () => ({ query: null, pathname: null })),
+        maybe => getOrElseMaybe(maybe, () => ({ query: {}, pathname: null })),
     );
 
 export const replacePathInParsedUrl = ({
