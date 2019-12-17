@@ -1,12 +1,56 @@
 import * as assert from 'assert';
+import { pipe, pipeWith } from 'pipe-ts';
+import * as urlHelpers from 'url';
 import {
     addQueryToUrl,
     appendPathnameToUrl,
+    mapParsedUrl,
+    mapUrl,
     replaceHashInUrl,
     replacePathInUrl,
+    replacePathnameInParsedUrl,
     replacePathnameInUrl,
+    replaceQueryInParsedUrl,
     replaceQueryInUrl,
 } from './index';
+
+assert.deepEqual(
+    pipeWith(
+        urlHelpers.parse('https://foo.com/bar', true),
+        parsedUrl =>
+            mapParsedUrl(({ parsedUrl }) => ({
+                ...parsedUrl,
+                pathname: '/foo',
+                query: { a: 'b' },
+            }))({ parsedUrl }),
+        urlHelpers.format,
+    ),
+    'https://foo.com/foo?a=b',
+);
+
+assert.deepEqual(
+    pipeWith('https://foo.com/bar', url =>
+        mapUrl(({ parsedUrl }) => ({
+            ...parsedUrl,
+            pathname: '/foo',
+            query: { a: 'b' },
+        }))({ url }),
+    ),
+    'https://foo.com/foo?a=b',
+);
+
+assert.deepEqual(
+    pipeWith('https://foo.com/bar', url =>
+        mapUrl(
+            pipe(
+                replacePathnameInParsedUrl({ newPathname: () => '/foo' }),
+                parsedUrl =>
+                    replaceQueryInParsedUrl({ newQuery: () => ({ a: 'b' }) })({ parsedUrl }),
+            ),
+        )({ url }),
+    ),
+    'https://foo.com/foo?a=b',
+);
 
 assert.strictEqual(
     replaceQueryInUrl({
@@ -76,15 +120,15 @@ assert.strictEqual(
     'https://foo.com',
 );
 assert.strictEqual(
-    replacePathnameInUrl({ url: 'https://foo.com/foo?example' })({ newPathname: '/bar' }),
-    'https://foo.com/bar?example',
+    replacePathnameInUrl({ url: 'https://foo.com/foo?example=' })({ newPathname: '/bar' }),
+    'https://foo.com/bar?example=',
 );
 
 assert.strictEqual(appendPathnameToUrl({ url: '/foo' })({ pathnameToAppend: '/bar' }), '/foo/bar');
 assert.strictEqual(appendPathnameToUrl({ url: '/foo/' })({ pathnameToAppend: '/bar' }), '/foo/bar');
 assert.strictEqual(
-    appendPathnameToUrl({ url: '/foo?example' })({ pathnameToAppend: '/bar' }),
-    '/foo/bar?example',
+    appendPathnameToUrl({ url: '/foo?example=' })({ pathnameToAppend: '/bar' }),
+    '/foo/bar?example=',
 );
 assert.strictEqual(
     appendPathnameToUrl({ url: '/@foo' })({ pathnameToAppend: '/bar' }),
