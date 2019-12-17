@@ -9,16 +9,14 @@ import {
 } from './index';
 
 assert.strictEqual(
-    addQueryToUrl({ url: 'http://foo.com/' })({
-        queryToAppend: {
-            string: 'string',
-            number: 1,
-            boolean: true,
-            strings: ['string1', 'string2'],
-        },
+    replaceQueryInUrl({
+        url: '/foo?string=string&number=1&boolean=true&strings=string1&strings=string2',
+    })({
+        newQuery: { foo: 1 },
     }),
-    'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
+    '/foo?foo=1',
 );
+
 assert.strictEqual(
     replaceQueryInUrl({
         url: 'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
@@ -34,6 +32,18 @@ assert.strictEqual(
         newQuery: {},
     }),
     'http://foo.com/',
+);
+
+assert.strictEqual(
+    addQueryToUrl({ url: 'http://foo.com/' })({
+        queryToAppend: {
+            string: 'string',
+            number: 1,
+            boolean: true,
+            strings: ['string1', 'string2'],
+        },
+    }),
+    'http://foo.com/?string=string&number=1&boolean=true&strings=string1&strings=string2',
 );
 assert.strictEqual(
     addQueryToUrl({ url: 'http://foo:bar@baz.com/' })({
@@ -52,10 +62,18 @@ assert.strictEqual(
     replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: '/bar' }),
     'https://foo.com/bar',
 );
+assert.strictEqual(
+    replacePathInUrl({ url: 'https://foo.com/foo?example' })({ newPath: null }),
+    'https://foo.com',
+);
 
 assert.strictEqual(
     replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: '/bar' }),
     'https://foo.com/bar',
+);
+assert.strictEqual(
+    replacePathnameInUrl({ url: 'https://foo.com/foo' })({ newPathname: null }),
+    'https://foo.com',
 );
 assert.strictEqual(
     replacePathnameInUrl({ url: 'https://foo.com/foo?example' })({ newPathname: '/bar' }),
@@ -63,6 +81,7 @@ assert.strictEqual(
 );
 
 assert.strictEqual(appendPathnameToUrl({ url: '/foo' })({ pathnameToAppend: '/bar' }), '/foo/bar');
+assert.strictEqual(appendPathnameToUrl({ url: '/foo/' })({ pathnameToAppend: '/bar' }), '/foo/bar');
 assert.strictEqual(
     appendPathnameToUrl({ url: '/foo?example' })({ pathnameToAppend: '/bar' }),
     '/foo/bar?example',
@@ -73,5 +92,5 @@ assert.strictEqual(
 );
 
 assert.strictEqual(replaceHashInUrl({ url: '/foo' })({ newHash: '#bar' }), '/foo#bar');
-assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: undefined }), '/foo');
+assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: null }), '/foo');
 assert.strictEqual(replaceHashInUrl({ url: '/foo#bar' })({ newHash: '#baz' }), '/foo#baz');
