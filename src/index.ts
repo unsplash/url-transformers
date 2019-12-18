@@ -84,7 +84,7 @@ export const addQueryToUrl = pipe(
 type ParsedPath = Pick<ParsedUrl, 'query' | 'pathname'>;
 
 const parsePath = pipe(
-    (path: string) => urlHelpers.parse(path, true),
+    (path: string) => parseUrlWithQueryString(path),
     ({ query, pathname }): ParsedPath => ({ query, pathname }),
 );
 
