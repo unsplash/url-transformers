@@ -4,6 +4,7 @@ A small helper library for manipulating URL strings in Node and in the browser. 
 
 Currently `url-transformers` provides the following helpers:
 
+-   `mapUrl`
 -   `replaceQueryInUrl`
 -   `addQueryToUrl`
 -   `replacePathInUrl`
