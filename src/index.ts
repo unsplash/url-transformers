@@ -94,8 +94,8 @@ type Path = Required<NodeUrlObjectWithParsedQuery>['path'];
 const parseNullablePath = (maybePath: Path): ParsedPath =>
     pipeWith(
         maybePath,
-        maybe => mapMaybe(maybe, parsePath),
-        maybe => getOrElseMaybe(maybe, () => ({ query: {}, pathname: null })),
+        mapMaybe(parsePath),
+        getOrElseMaybe((): ParsedPath => ({ query: {}, pathname: null })),
     );
 
 const convertUpdatePathFnToUpdateParsedPathFn = (
@@ -139,8 +139,10 @@ export const replacePathnameInUrl = pipe(
 
 export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUrlFn =>
     replacePathnameInParsedUrl(prevPathname => {
-        const pathnameParts = pipeWith(mapMaybe(prevPathname, getPartsFromPathname), maybe =>
-            getOrElseMaybe(maybe, () => []),
+        const pathnameParts = pipeWith(
+            prevPathname,
+            mapMaybe(getPartsFromPathname),
+            getOrElseMaybe((): string[] => []),
         );
         const pathnamePartsToAppend = getPartsFromPathname(pathnameToAppend);
         const newPathnameParts = [...pathnameParts, ...pathnamePartsToAppend];
