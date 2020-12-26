@@ -89,7 +89,9 @@ const parsePath = pipe(
     ({ query, pathname }): ParsedPath => ({ query, pathname }),
 );
 
-const parseNullablePath = (maybePath: Required<NodeUrlObjectWithParsedQuery>['path']): ParsedPath =>
+type Path = Required<NodeUrlObjectWithParsedQuery>['path'];
+
+const parseNullablePath = (maybePath: Path): ParsedPath =>
     pipeWith(
         maybePath,
         maybe => mapMaybe(maybe, parsePath),
