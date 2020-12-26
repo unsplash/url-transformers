@@ -5,7 +5,7 @@ import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { isNonEmptyString } from './helpers/other';
 
 interface NodeUrlObjectWithParsedQuery extends urlHelpers.UrlObject {
-    query: ParsedUrlQueryInput;
+    query?: ParsedUrlQueryInput | null;
 }
 
 type Update<T> = T | ((prev: T) => T);
