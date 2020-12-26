@@ -12,6 +12,11 @@ buffer-from@^1.0.0:
   resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.1.tgz#32713bc028f75c02fdb710d7c7bcec1f2c6070ef"
   integrity sha512-MQcXEUbCKtEo7bhqEs6560Hyd4XaovZlO/k9V3hjVUF/zwW7KBVdSK4gIt/bzwS9MbR5qob+F5jusZsb0YQK2A==
 
+fp-ts@^2.9.1:
+  version "2.9.1"
+  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.9.1.tgz#24557f66f9221f8a1922fce6cbe2b8ea6d0f3929"
+  integrity sha512-9++IpEtF2blK7tfSV+iHxO3KXdAGO/bPPQtUYqzC6XKzGOWNctqvlf13SpXxcu2mYaibOvneh/m9vAPLAHdoRQ==
+
 monocle-ts@^2.3.3:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/monocle-ts/-/monocle-ts-2.3.3.tgz#1e6d83dcf42bcb96b74fdda07813c2a47ec6cfa4"
