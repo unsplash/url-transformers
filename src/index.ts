@@ -51,12 +51,14 @@ const convertNodeUrl = ({
     slashes,
 });
 
+const parseUrl = pipe(parseUrlWithQueryString, convertNodeUrl);
+const formatUrl = (parsedUrl: ParsedUrl) => urlHelpers.format(parsedUrl);
+
 type MapParsedUrlFn = (parsedUrl: ParsedUrl) => ParsedUrl;
 export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => fn;
 
 type MapUrlFn = (url: string) => string;
-export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn =>
-    pipe(parseUrlWithQueryString, convertNodeUrl, fn, urlHelpers.format);
+export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn => pipe(parseUrl, fn, formatUrl);
 
 export const replaceQueryInParsedUrl = (newQuery: Update<ParsedUrl['query']>): MapParsedUrlFn => (
     parsedUrl,
@@ -84,11 +86,13 @@ const parseNullablePath = pipe(
     getOrElseMaybe((): ParsedPath => ({ query: null, pathname: null })),
 );
 
+const formatPath = (parsedPath: ParsedPath) => urlHelpers.format(parsedPath);
+
 type Path = urlHelpers.Url['path'];
 
 const convertUpdatePathFnToUpdateParsedPathFn = (
     updatePath: UpdateFn<Path>,
-): UpdateFn<ParsedPath> => pipe(urlHelpers.format, updatePath, parseNullablePath);
+): UpdateFn<ParsedPath> => pipe(formatPath, updatePath, parseNullablePath);
 
 const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>): Update<ParsedPath> =>
     typeof newPath === 'function'
