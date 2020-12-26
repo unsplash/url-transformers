@@ -117,11 +117,9 @@ const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>): Update<Pars
         ? convertUpdatePathFnToUpdateParsedPathFn(newPath)
         : parseNullablePath(newPath);
 
-export const replacePathInParsedUrl = pipeWith(
-    baseLens,
-    L.props('pathname', 'query'),
-    lensModifyOrSet,
-);
+const pathLens: L.Lens<ParsedUrl, ParsedPath> = pipeWith(baseLens, L.props('pathname', 'query'));
+
+export const replacePathInParsedUrl = pipeWith(pathLens, lensModifyOrSet);
 
 export const replacePathInUrl = pipe(
     convertUpdatePathToUpdateParsedPath,
@@ -129,7 +127,12 @@ export const replacePathInUrl = pipe(
     mapUrl,
 );
 
-export const replacePathnameInParsedUrl = pipeWith(baseLens, L.prop('pathname'), lensModifyOrSet);
+const pathnameLens: L.Lens<ParsedUrl, ParsedUrl['pathname']> = pipeWith(
+    baseLens,
+    L.prop('pathname'),
+);
+
+export const replacePathnameInParsedUrl = pipeWith(pathnameLens, lensModifyOrSet);
 
 export const replacePathnameInUrl = pipe(replacePathnameInParsedUrl, mapUrl);
 
