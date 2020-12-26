@@ -96,7 +96,7 @@ const getParsedPathFromString = (maybePath: NodeUrlObjectWithParsedQuery['path']
     );
 
 export const replacePathInParsedUrl = (
-    newPath: Update<NodeUrlObjectWithParsedQuery['path']>,
+    newPath: Update<NodeUrlObjectWithParsedQuery['pathname']>,
 ): MapParsedUrlFn => parsedUrl =>
     pipeWith(
         newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
