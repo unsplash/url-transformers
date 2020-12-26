@@ -1,3 +1,5 @@
+import * as L from 'monocle-ts/lib/Lens';
+// TODO: remove now we have fp-ts (peer dep)
 import { pipe, pipeWith } from 'pipe-ts';
 import { ParsedUrlQueryInput } from 'querystring';
 import * as urlHelpers from 'url';
@@ -30,6 +32,8 @@ interface ParsedUrl
             'auth' | 'hash' | 'hostname' | 'pathname' | 'port' | 'protocol' | 'query' | 'slashes'
         >
     > {}
+
+const baseLens = L.id<ParsedUrl>();
 
 const convertNodeUrl = ({
     auth,
@@ -70,12 +74,12 @@ export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => fn;
 type MapUrlFn = (url: string) => string;
 export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn => pipe(urlCodec.decode, fn, urlCodec.encode);
 
-export const replaceQueryInParsedUrl = (newQuery: Update<ParsedUrl['query']>): MapParsedUrlFn => (
-    parsedUrl,
-) => ({
-    ...parsedUrl,
-    query: typeof newQuery === 'function' ? newQuery(parsedUrl.query) : newQuery,
-});
+export const replaceQueryInParsedUrl = (newQuery: Update<ParsedUrl['query']>): MapParsedUrlFn =>
+    pipeWith(
+        baseLens,
+        L.prop('query'),
+        L.modify((prev) => (typeof newQuery === 'function' ? newQuery(prev) : newQuery)),
+    );
 
 export const replaceQueryInUrl = pipe(replaceQueryInParsedUrl, mapUrl);
 
@@ -114,12 +118,12 @@ const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>): Update<Pars
         ? convertUpdatePathFnToUpdateParsedPathFn(newPath)
         : parseNullablePath(newPath);
 
-export const replacePathInParsedUrl = (newPath: Update<ParsedPath>): MapParsedUrlFn => (
-    parsedUrl,
-) => ({
-    ...parsedUrl,
-    ...(typeof newPath === 'function' ? newPath(parsedUrl) : newPath),
-});
+export const replacePathInParsedUrl = (newPath: Update<ParsedPath>): MapParsedUrlFn =>
+    pipeWith(
+        baseLens,
+        L.props('pathname', 'query'),
+        L.modify((prev) => (typeof newPath === 'function' ? newPath(prev) : newPath)),
+    );
 
 export const replacePathInUrl = pipe(
     convertUpdatePathToUpdateParsedPath,
@@ -129,10 +133,12 @@ export const replacePathInUrl = pipe(
 
 export const replacePathnameInParsedUrl = (
     newPathname: Update<ParsedUrl['pathname']>,
-): MapParsedUrlFn => (parsedUrl) => ({
-    ...parsedUrl,
-    pathname: typeof newPathname === 'function' ? newPathname(parsedUrl.pathname) : newPathname,
-});
+): MapParsedUrlFn =>
+    pipeWith(
+        baseLens,
+        L.prop('pathname'),
+        L.modify((prev) => (typeof newPathname === 'function' ? newPathname(prev) : newPathname)),
+    );
 
 export const replacePathnameInUrl = pipe(replacePathnameInParsedUrl, mapUrl);
 
@@ -151,11 +157,11 @@ export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUr
 
 export const appendPathnameToUrl = pipe(appendPathnameToParsedUrl, mapUrl);
 
-export const replaceHashInParsedUrl = (newHash: Update<ParsedUrl['hash']>): MapParsedUrlFn => (
-    parsedUrl,
-) => ({
-    ...parsedUrl,
-    hash: typeof newHash === 'function' ? newHash(parsedUrl.hash) : newHash,
-});
+export const replaceHashInParsedUrl = (newHash: Update<ParsedUrl['hash']>): MapParsedUrlFn =>
+    pipeWith(
+        baseLens,
+        L.prop('hash'),
+        L.modify((prev) => (typeof newHash === 'function' ? newHash(prev) : newHash)),
+    );
 
 export const replaceHashInUrl = pipe(replaceHashInParsedUrl, mapUrl);
