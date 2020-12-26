@@ -79,12 +79,12 @@ const parsePath = pipe(
     ({ query, pathname }): ParsedPath => ({ query, pathname }),
 );
 
-type Path = urlHelpers.Url['path'];
-
 const parseNullablePath = pipe(
     mapMaybe(parsePath),
     getOrElseMaybe((): ParsedPath => ({ query: {}, pathname: null })),
 );
+
+type Path = urlHelpers.Url['path'];
 
 const convertUpdatePathFnToUpdateParsedPathFn = (
     updatePath: UpdateFn<Path>,
