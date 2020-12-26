@@ -89,10 +89,9 @@ export const addQueryToUrl = pipe(addQueryToParsedUrl, mapUrl);
 
 interface ParsedPath extends Pick<ParsedUrl, 'query' | 'pathname'> {}
 
-const parsePath = pipe(
-    parseUrlWithQueryString,
-    ({ query, pathname }): ParsedPath => ({ query, pathname }),
-);
+const pathLens: L.Lens<ParsedUrl, ParsedPath> = pipeWith(urlLens, L.props('pathname', 'query'));
+
+const parsePath = pipe(parseUrlWithQueryString, pathLens.get);
 
 const parseNullablePath = pipe(
     mapMaybe(parsePath),
@@ -116,8 +115,6 @@ const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>): Update<Pars
     typeof newPath === 'function'
         ? convertUpdatePathFnToUpdateParsedPathFn(newPath)
         : parseNullablePath(newPath);
-
-const pathLens: L.Lens<ParsedUrl, ParsedPath> = pipeWith(urlLens, L.props('pathname', 'query'));
 
 export const replacePathInParsedUrl = pipeWith(pathLens, lensModifyOrSet);
 
