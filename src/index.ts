@@ -52,36 +52,25 @@ const convertNodeUrl = ({
 });
 
 type MapParsedUrlFn = (parsedUrl: ParsedUrl) => ParsedUrl;
-export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => parsedUrl => fn(parsedUrl);
+export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => (parsedUrl) => fn(parsedUrl);
 
 type MapUrlFn = (url: string) => string;
 export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn =>
-    pipe(
-        parseUrlWithQueryString,
-        convertNodeUrl,
-        fn,
-        urlHelpers.format,
-    );
+    pipe(parseUrlWithQueryString, convertNodeUrl, fn, urlHelpers.format);
 
-export const replaceQueryInParsedUrl = (
-    newQuery: Update<ParsedUrl['query']>,
-): MapParsedUrlFn => parsedUrl => ({
+export const replaceQueryInParsedUrl = (newQuery: Update<ParsedUrl['query']>): MapParsedUrlFn => (
+    parsedUrl,
+) => ({
     ...parsedUrl,
     query: typeof newQuery === 'function' ? newQuery(parsedUrl.query) : newQuery,
 });
 
-export const replaceQueryInUrl = pipe(
-    replaceQueryInParsedUrl,
-    mapUrl,
-);
+export const replaceQueryInUrl = pipe(replaceQueryInParsedUrl, mapUrl);
 
 export const addQueryToParsedUrl = (queryToAppend: ParsedUrl['query']): MapParsedUrlFn =>
-    replaceQueryInParsedUrl(existingQuery => ({ ...existingQuery, ...queryToAppend }));
+    replaceQueryInParsedUrl((existingQuery) => ({ ...existingQuery, ...queryToAppend }));
 
-export const addQueryToUrl = pipe(
-    addQueryToParsedUrl,
-    mapUrl,
-);
+export const addQueryToUrl = pipe(addQueryToParsedUrl, mapUrl);
 
 interface ParsedPath extends Pick<ParsedUrl, 'query' | 'pathname'> {}
 
@@ -99,21 +88,16 @@ const parseNullablePath = pipe(
 
 const convertUpdatePathFnToUpdateParsedPathFn = (
     updatePath: UpdateFn<Path>,
-): UpdateFn<ParsedPath> =>
-    pipe(
-        urlHelpers.format,
-        updatePath,
-        parseNullablePath,
-    );
+): UpdateFn<ParsedPath> => pipe(urlHelpers.format, updatePath, parseNullablePath);
 
 const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>) =>
     typeof newPath === 'function'
         ? convertUpdatePathFnToUpdateParsedPathFn(newPath)
         : parseNullablePath(newPath);
 
-export const replacePathInParsedUrl = (
-    newPath: Update<ParsedPath>,
-): MapParsedUrlFn => parsedUrl => ({
+export const replacePathInParsedUrl = (newPath: Update<ParsedPath>): MapParsedUrlFn => (
+    parsedUrl,
+) => ({
     ...parsedUrl,
     ...(typeof newPath === 'function' ? newPath(parsedUrl) : newPath),
 });
@@ -126,18 +110,15 @@ export const replacePathInUrl = pipe(
 
 export const replacePathnameInParsedUrl = (
     newPathname: Update<ParsedUrl['pathname']>,
-): MapParsedUrlFn => parsedUrl => ({
+): MapParsedUrlFn => (parsedUrl) => ({
     ...parsedUrl,
     pathname: typeof newPathname === 'function' ? newPathname(parsedUrl.pathname) : newPathname,
 });
 
-export const replacePathnameInUrl = pipe(
-    replacePathnameInParsedUrl,
-    mapUrl,
-);
+export const replacePathnameInUrl = pipe(replacePathnameInParsedUrl, mapUrl);
 
 export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUrlFn =>
-    replacePathnameInParsedUrl(prevPathname => {
+    replacePathnameInParsedUrl((prevPathname) => {
         const pathnameParts = pipeWith(
             prevPathname,
             mapMaybe(getPartsFromPathname),
@@ -149,19 +130,13 @@ export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUr
         return newPathname;
     });
 
-export const appendPathnameToUrl = pipe(
-    appendPathnameToParsedUrl,
-    mapUrl,
-);
+export const appendPathnameToUrl = pipe(appendPathnameToParsedUrl, mapUrl);
 
-export const replaceHashInParsedUrl = (
-    newHash: Update<ParsedUrl['hash']>,
-): MapParsedUrlFn => parsedUrl => ({
+export const replaceHashInParsedUrl = (newHash: Update<ParsedUrl['hash']>): MapParsedUrlFn => (
+    parsedUrl,
+) => ({
     ...parsedUrl,
     hash: typeof newHash === 'function' ? newHash(parsedUrl.hash) : newHash,
 });
 
-export const replaceHashInUrl = pipe(
-    replaceHashInParsedUrl,
-    mapUrl,
-);
+export const replaceHashInUrl = pipe(replaceHashInParsedUrl, mapUrl);
