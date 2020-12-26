@@ -90,7 +90,7 @@ const convertUpdatePathFnToUpdateParsedPathFn = (
     updatePath: UpdateFn<Path>,
 ): UpdateFn<ParsedPath> => pipe(urlHelpers.format, updatePath, parseNullablePath);
 
-const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>) =>
+const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>): Update<ParsedPath> =>
     typeof newPath === 'function'
         ? convertUpdatePathFnToUpdateParsedPathFn(newPath)
         : parseNullablePath(newPath);
