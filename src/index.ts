@@ -112,11 +112,12 @@ const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>) =>
         ? convertUpdatePathFnToUpdateParsedPathFn(newPath)
         : parseNullablePath(newPath);
 
-export const replacePathInParsedUrl = (newPath: Update<ParsedPath>): MapParsedUrlFn => parsedUrl =>
-    pipeWith(newPath instanceof Function ? newPath(parsedUrl) : newPath, newPathParsed => ({
-        ...parsedUrl,
-        ...newPathParsed,
-    }));
+export const replacePathInParsedUrl = (
+    newPath: Update<ParsedPath>,
+): MapParsedUrlFn => parsedUrl => ({
+    ...parsedUrl,
+    ...(typeof newPath === 'function' ? newPath(parsedUrl) : newPath),
+});
 
 export const replacePathInUrl = pipe(
     convertUpdatePathToUpdateParsedPath,
