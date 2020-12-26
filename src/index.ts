@@ -35,7 +35,7 @@ interface ParsedUrl
 
 const baseLens = L.id<ParsedUrl>();
 
-const lensModifyOrSet = <A>(f: A | ((a: A) => A)) => <S>(sa: L.Lens<S, A>) =>
+const lensModifyOrSet = <S, A>(sa: L.Lens<S, A>) => (f: A | ((a: A) => A)) =>
     // TODO: typeof f === 'function' - errors
     f instanceof Function ? pipeWith(sa, L.modify(f)) : sa.set(f);
 
@@ -78,8 +78,7 @@ export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => fn;
 type MapUrlFn = (url: string) => string;
 export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn => pipe(urlCodec.decode, fn, urlCodec.encode);
 
-export const replaceQueryInParsedUrl = (newQuery: Update<ParsedUrl['query']>): MapParsedUrlFn =>
-    pipeWith(baseLens, L.prop('query'), lensModifyOrSet(newQuery));
+export const replaceQueryInParsedUrl = pipeWith(baseLens, L.prop('query'), lensModifyOrSet);
 
 export const replaceQueryInUrl = pipe(replaceQueryInParsedUrl, mapUrl);
 
@@ -118,8 +117,11 @@ const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>): Update<Pars
         ? convertUpdatePathFnToUpdateParsedPathFn(newPath)
         : parseNullablePath(newPath);
 
-export const replacePathInParsedUrl = (newPath: Update<ParsedPath>): MapParsedUrlFn =>
-    pipeWith(baseLens, L.props('pathname', 'query'), lensModifyOrSet(newPath));
+export const replacePathInParsedUrl = pipeWith(
+    baseLens,
+    L.props('pathname', 'query'),
+    lensModifyOrSet,
+);
 
 export const replacePathInUrl = pipe(
     convertUpdatePathToUpdateParsedPath,
@@ -127,9 +129,7 @@ export const replacePathInUrl = pipe(
     mapUrl,
 );
 
-export const replacePathnameInParsedUrl = (
-    newPathname: Update<ParsedUrl['pathname']>,
-): MapParsedUrlFn => pipeWith(baseLens, L.prop('pathname'), lensModifyOrSet(newPathname));
+export const replacePathnameInParsedUrl = pipeWith(baseLens, L.prop('pathname'), lensModifyOrSet);
 
 export const replacePathnameInUrl = pipe(replacePathnameInParsedUrl, mapUrl);
 
@@ -148,7 +148,6 @@ export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUr
 
 export const appendPathnameToUrl = pipe(appendPathnameToParsedUrl, mapUrl);
 
-export const replaceHashInParsedUrl = (newHash: Update<ParsedUrl['hash']>): MapParsedUrlFn =>
-    pipeWith(baseLens, L.prop('hash'), lensModifyOrSet(newHash));
+export const replaceHashInParsedUrl = pipeWith(baseLens, L.prop('hash'), lensModifyOrSet);
 
 export const replaceHashInUrl = pipe(replaceHashInParsedUrl, mapUrl);
