@@ -79,7 +79,7 @@ const parsePath = pipe(
     ({ query, pathname }): ParsedPath => ({ query, pathname }),
 );
 
-type Path = Required<NodeUrlObjectWithParsedQuery>['path'];
+type Path = urlHelpers.Url['path'];
 
 const parseNullablePath = pipe(
     mapMaybe(parsePath),
