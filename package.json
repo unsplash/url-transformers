@@ -19,6 +19,7 @@
   ],
   "dependencies": {
     "@types/node": "^14.14.16",
+    "monocle-ts": "^2.3.3",
     "pipe-ts": "^0.0.9"
   },
   "devDependencies": {
