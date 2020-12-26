@@ -54,11 +54,21 @@ const convertNodeUrl = ({
 const parseUrl = pipe(parseUrlWithQueryString, convertNodeUrl);
 const formatUrl = (parsedUrl: ParsedUrl) => urlHelpers.format(parsedUrl);
 
+type Codec<I, O> = {
+    decode: (i: I) => O;
+    encode: (o: O) => I;
+};
+
+const urlCodec: Codec<string, ParsedUrl> = {
+    decode: parseUrl,
+    encode: formatUrl,
+};
+
 type MapParsedUrlFn = (parsedUrl: ParsedUrl) => ParsedUrl;
 export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => fn;
 
 type MapUrlFn = (url: string) => string;
-export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn => pipe(parseUrl, fn, formatUrl);
+export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn => pipe(urlCodec.decode, fn, urlCodec.encode);
 
 export const replaceQueryInParsedUrl = (newQuery: Update<ParsedUrl['query']>): MapParsedUrlFn => (
     parsedUrl,
@@ -90,9 +100,14 @@ const formatPath = (parsedPath: ParsedPath) => urlHelpers.format(parsedPath);
 
 type Path = urlHelpers.Url['path'];
 
+const pathCodec: Codec<Path, ParsedPath> = {
+    decode: parseNullablePath,
+    encode: formatPath,
+};
+
 const convertUpdatePathFnToUpdateParsedPathFn = (
     updatePath: UpdateFn<Path>,
-): UpdateFn<ParsedPath> => pipe(formatPath, updatePath, parseNullablePath);
+): UpdateFn<ParsedPath> => pipe(pathCodec.encode, updatePath, pathCodec.decode);
 
 const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>): Update<ParsedPath> =>
     typeof newPath === 'function'
