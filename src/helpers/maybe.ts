@@ -1,9 +1,8 @@
 // https://github.com/OliverJAsh/simple-maybe
 
-type Maybe<T> = undefined | null | T;
+type Maybe<T> = null | T;
 
-export const isDefined = <T>(maybeT: Maybe<T>): maybeT is T =>
-    maybeT !== undefined && maybeT !== null;
+export const isDefined = <T>(maybeT: Maybe<T>): maybeT is T => maybeT !== null;
 
 // extend {} to ensure we're mapping to a non-null type
 export const mapMaybe = <T, B extends {}>(f: (t: T) => B) => (maybeT: Maybe<T>): Maybe<B> =>
