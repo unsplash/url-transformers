@@ -89,7 +89,7 @@ const parsePath = pipe(
     ({ query, pathname }): ParsedPath => ({ query, pathname }),
 );
 
-const getParsedPathFromString = (maybePath: NodeUrlObjectWithParsedQuery['path']): ParsedPath =>
+const parseNullablePath = (maybePath: NodeUrlObjectWithParsedQuery['path']): ParsedPath =>
     pipeWith(
         maybePath,
         maybe => mapMaybe(maybe, parsePath),
@@ -101,7 +101,7 @@ export const replacePathInParsedUrl = (
 ): MapParsedUrlFn => parsedUrl =>
     pipeWith(
         newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
-        getParsedPathFromString,
+        parseNullablePath,
         newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
     );
 
