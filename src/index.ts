@@ -52,7 +52,7 @@ const convertNodeUrl = ({
 });
 
 type MapParsedUrlFn = (parsedUrl: ParsedUrl) => ParsedUrl;
-export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => (parsedUrl) => fn(parsedUrl);
+export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => fn;
 
 type MapUrlFn = (url: string) => string;
 export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn =>
