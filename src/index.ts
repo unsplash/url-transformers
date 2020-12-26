@@ -98,19 +98,27 @@ const parseNullablePath = (maybePath: Path): ParsedPath =>
         maybe => getOrElseMaybe(maybe, () => ({ query: {}, pathname: null })),
     );
 
-export const replacePathInParsedUrl = (
-    newPath: Update<ParsedUrl['pathname']>,
-): MapParsedUrlFn => parsedUrl =>
-    pipeWith(
-        newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
+const convertUpdatePathToUpdateParsedPath = (updatePath: UpdateFn<Path>): UpdateFn<ParsedPath> =>
+    pipe(
+        urlHelpers.format,
+        updatePath,
         parseNullablePath,
-        newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
     );
 
-export const replacePathInUrl = pipe(
-    replacePathInParsedUrl,
-    mapUrl,
-);
+export const replacePathInParsedUrl = (newPath: Update<ParsedPath>): MapParsedUrlFn => parsedUrl =>
+    pipeWith(newPath instanceof Function ? newPath(parsedUrl) : newPath, newPathParsed => ({
+        ...parsedUrl,
+        ...newPathParsed,
+    }));
+
+export const replacePathInUrl = (newPath: Update<Path>) =>
+    pipeWith(
+        newPath instanceof Function
+            ? convertUpdatePathToUpdateParsedPath(newPath)
+            : parseNullablePath(newPath),
+        replacePathInParsedUrl,
+        mapUrl,
+    );
 
 export const replacePathnameInParsedUrl = (
     newPathname: Update<ParsedUrl['pathname']>,

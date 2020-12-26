@@ -7,6 +7,7 @@ import {
     mapParsedUrl,
     mapUrl,
     replaceHashInUrl,
+    replacePathInParsedUrl,
     replacePathInUrl,
     replacePathnameInParsedUrl,
     replacePathnameInUrl,
@@ -90,6 +91,41 @@ assert.strictEqual(
     'http://foo.com/?a=b&b=c&c=d',
 );
 
+assert.strictEqual(
+    pipeWith(
+        'https://foo.com/foo?example',
+        mapUrl(replacePathInParsedUrl(prev => ({ pathname: `${prev.pathname}/bar`, query: null }))),
+    ),
+    'https://foo.com/foo/bar',
+);
+assert.strictEqual(
+    pipeWith(
+        'https://foo.com/foo?example',
+        mapUrl(
+            replacePathInParsedUrl(prev => ({
+                pathname: `${prev.pathname}/bar`,
+                query: prev.query,
+            })),
+        ),
+    ),
+    'https://foo.com/foo/bar?example=',
+);
+assert.strictEqual(
+    pipeWith(
+        'https://foo.com/foo?example',
+        mapUrl(replacePathInParsedUrl({ pathname: null, query: null })),
+    ),
+    'https://foo.com',
+);
+
+assert.strictEqual(
+    replacePathInUrl(prev => `${prev}/bar`)('https://foo.com/foo'),
+    'https://foo.com/foo/bar',
+);
+assert.strictEqual(
+    replacePathInUrl(prev => `${prev}/bar`)('https://foo.com/foo?example'),
+    'https://foo.com/foo?example=%2Fbar',
+);
 assert.strictEqual(replacePathInUrl('/bar')('https://foo.com/foo?example'), 'https://foo.com/bar');
 assert.strictEqual(replacePathInUrl(null)('https://foo.com/foo?example'), 'https://foo.com');
 
