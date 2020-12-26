@@ -23,12 +23,13 @@ const parseUrlWithQueryString = (url: string) =>
     );
 
 // We omit some properties since they're just serialized versions of other properties.
-type ParsedUrl = Required<
-    Pick<
-        NodeUrlObjectWithParsedQuery,
-        'auth' | 'hash' | 'hostname' | 'pathname' | 'port' | 'protocol' | 'query' | 'slashes'
-    >
->;
+interface ParsedUrl
+    extends Required<
+        Pick<
+            NodeUrlObjectWithParsedQuery,
+            'auth' | 'hash' | 'hostname' | 'pathname' | 'port' | 'protocol' | 'query' | 'slashes'
+        >
+    > {}
 
 const convertNodeUrl = ({
     auth,
@@ -82,7 +83,7 @@ export const addQueryToUrl = pipe(
     mapUrl,
 );
 
-type ParsedPath = Pick<ParsedUrl, 'query' | 'pathname'>;
+interface ParsedPath extends Pick<ParsedUrl, 'query' | 'pathname'> {}
 
 const parsePath = pipe(
     parseUrlWithQueryString,
