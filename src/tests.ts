@@ -34,10 +34,10 @@ assert.deepEqual(
         mapUrl((parsedUrl) => ({
             ...parsedUrl,
             pathname: '/foo',
-            query: { a: 'b' },
+            query: { a: 'b', foo: 1 },
         })),
     ),
-    'https://foo.com/foo?a=b',
+    'https://foo.com/foo?a=b&foo=1',
 );
 
 assert.deepEqual(
