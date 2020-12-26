@@ -81,7 +81,7 @@ const parsePath = pipe(
 
 const parseNullablePath = pipe(
     mapMaybe(parsePath),
-    getOrElseMaybe((): ParsedPath => ({ query: {}, pathname: null })),
+    getOrElseMaybe((): ParsedPath => ({ query: null, pathname: null })),
 );
 
 type Path = urlHelpers.Url['path'];
