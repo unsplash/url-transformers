@@ -66,7 +66,7 @@ export const replaceQueryInParsedUrl = (
     newQuery: Update<ParsedUrl['query']>,
 ): MapParsedUrlFn => parsedUrl => ({
     ...parsedUrl,
-    query: newQuery instanceof Function ? newQuery(parsedUrl.query) : newQuery,
+    query: typeof newQuery === 'function' ? newQuery(parsedUrl.query) : newQuery,
 });
 
 export const replaceQueryInUrl = pipe(
@@ -106,7 +106,7 @@ const convertUpdatePathFnToUpdateParsedPathFn = (
     );
 
 const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>) =>
-    newPath instanceof Function
+    typeof newPath === 'function'
         ? convertUpdatePathFnToUpdateParsedPathFn(newPath)
         : parseNullablePath(newPath);
 
@@ -127,7 +127,7 @@ export const replacePathnameInParsedUrl = (
     newPathname: Update<ParsedUrl['pathname']>,
 ): MapParsedUrlFn => parsedUrl => ({
     ...parsedUrl,
-    pathname: newPathname instanceof Function ? newPathname(parsedUrl.pathname) : newPathname,
+    pathname: typeof newPathname === 'function' ? newPathname(parsedUrl.pathname) : newPathname,
 });
 
 export const replacePathnameInUrl = pipe(
@@ -157,7 +157,7 @@ export const replaceHashInParsedUrl = (
     newHash: Update<ParsedUrl['hash']>,
 ): MapParsedUrlFn => parsedUrl => ({
     ...parsedUrl,
-    hash: newHash instanceof Function ? newHash(parsedUrl.hash) : newHash,
+    hash: typeof newHash === 'function' ? newHash(parsedUrl.hash) : newHash,
 });
 
 export const replaceHashInUrl = pipe(
