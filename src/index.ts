@@ -54,12 +54,12 @@ const convertNodeUrl = ({
 const parseUrl = pipe(parseUrlWithQueryString, convertNodeUrl);
 const formatUrl = (parsedUrl: ParsedUrl) => urlHelpers.format(parsedUrl);
 
-type Codec<I, O> = {
+type Codec<O, I> = {
     decode: (i: I) => O;
     encode: (o: O) => I;
 };
 
-const urlCodec: Codec<string, ParsedUrl> = {
+const urlCodec: Codec<ParsedUrl, string> = {
     decode: parseUrl,
     encode: formatUrl,
 };
@@ -100,7 +100,7 @@ const formatPath = (parsedPath: ParsedPath) => urlHelpers.format(parsedPath);
 
 type Path = urlHelpers.Url['path'];
 
-const pathCodec: Codec<Path, ParsedPath> = {
+const pathCodec: Codec<ParsedPath, Path> = {
     decode: parseNullablePath,
     encode: formatPath,
 };
