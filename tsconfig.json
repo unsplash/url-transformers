@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "CommonJS",
         "moduleResolution": "Node",
-        "target": "es5",
+        "target": "ES5",
         "strict": true,
         "noUncheckedIndexedAccess": true,
         "noImplicitReturns": true,
