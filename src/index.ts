@@ -78,7 +78,9 @@ export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => fn;
 type MapUrlFn = (url: string) => string;
 export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn => pipe(urlCodec.decode, fn, urlCodec.encode);
 
-export const replaceQueryInParsedUrl = pipeWith(urlLens, L.prop('query'), lensModifyOrSet);
+const queryLens: L.Lens<ParsedUrl, ParsedUrl['query']> = pipeWith(urlLens, L.prop('query'));
+
+export const replaceQueryInParsedUrl = pipeWith(queryLens, lensModifyOrSet);
 
 export const replaceQueryInUrl = pipe(replaceQueryInParsedUrl, mapUrl);
 
@@ -148,6 +150,8 @@ export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUr
 
 export const appendPathnameToUrl = pipe(appendPathnameToParsedUrl, mapUrl);
 
-export const replaceHashInParsedUrl = pipeWith(urlLens, L.prop('hash'), lensModifyOrSet);
+const hashLens: L.Lens<ParsedUrl, ParsedUrl['hash']> = pipeWith(urlLens, L.prop('hash'));
+
+export const replaceHashInParsedUrl = pipeWith(hashLens, lensModifyOrSet);
 
 export const replaceHashInUrl = pipe(replaceHashInParsedUrl, mapUrl);
