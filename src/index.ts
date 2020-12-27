@@ -54,9 +54,9 @@ const convertNodeUrl = ({
 const parseUrl = pipe(parseUrlWithQueryString, convertNodeUrl);
 const formatUrl = (parsedUrl: ParsedUrl) => urlHelpers.format(parsedUrl);
 
-type Codec<O, I> = {
-    decode: (i: I) => O;
-    encode: (o: O) => I;
+type Codec<A, IO> = {
+    decode: (io: IO) => A;
+    encode: (a: A) => IO;
 };
 
 const urlCodec: Codec<ParsedUrl, string> = {
