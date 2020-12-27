@@ -33,7 +33,7 @@ interface ParsedUrl
         >
     > {}
 
-const urlLens = L.id<ParsedUrl>();
+export const urlLens = L.id<ParsedUrl>();
 
 const lensModifyOrSet = <S, A>(sa: L.Lens<S, A>) => (f: A | ((a: A) => A)) =>
     // TODO: typeof f === 'function' - errors
@@ -78,7 +78,7 @@ export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => fn;
 type MapUrlFn = (url: string) => string;
 export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn => pipe(urlCodec.decode, fn, urlCodec.encode);
 
-const queryLens: L.Lens<ParsedUrl, ParsedUrl['query']> = pipeWith(urlLens, L.prop('query'));
+export const queryLens: L.Lens<ParsedUrl, ParsedUrl['query']> = pipeWith(urlLens, L.prop('query'));
 
 export const replaceQueryInParsedUrl = pipeWith(queryLens, lensModifyOrSet);
 
@@ -91,7 +91,10 @@ export const addQueryToUrl = pipe(addQueryToParsedUrl, mapUrl);
 
 interface ParsedPath extends Pick<ParsedUrl, 'query' | 'pathname'> {}
 
-const pathLens: L.Lens<ParsedUrl, ParsedPath> = pipeWith(urlLens, L.props('pathname', 'query'));
+export const pathLens: L.Lens<ParsedUrl, ParsedPath> = pipeWith(
+    urlLens,
+    L.props('pathname', 'query'),
+);
 
 const parsePath = pipe(parseUrlWithQueryString, pathLens.get);
 
@@ -126,7 +129,7 @@ export const replacePathInUrl = pipe(
     mapUrl,
 );
 
-const pathnameLens: L.Lens<ParsedUrl, ParsedUrl['pathname']> = pipeWith(
+export const pathnameLens: L.Lens<ParsedUrl, ParsedUrl['pathname']> = pipeWith(
     urlLens,
     L.prop('pathname'),
 );
@@ -150,7 +153,7 @@ export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUr
 
 export const appendPathnameToUrl = pipe(appendPathnameToParsedUrl, mapUrl);
 
-const hashLens: L.Lens<ParsedUrl, ParsedUrl['hash']> = pipeWith(urlLens, L.prop('hash'));
+export const hashLens: L.Lens<ParsedUrl, ParsedUrl['hash']> = pipeWith(urlLens, L.prop('hash'));
 
 export const replaceHashInParsedUrl = pipeWith(hashLens, lensModifyOrSet);
 
