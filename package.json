@@ -1,20 +1,20 @@
 {
   "name": "url-transformers",
-  "main": "./target/index.js",
-  "typings": "./target/index.d.ts",
+  "main": "./dist/lib/index.js",
+  "typings": "./dist/lib/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/unsplash/url-transformers.git"
   },
   "version": "0.0.9",
   "scripts": {
-    "compile": "rm -rf ./target/ && tsc",
-    "test": "npm run compile && node --require source-map-support/register ./target/tests.js",
+    "compile": "rm -rf ./dist/ && tsc",
+    "test": "npm run compile && node --require source-map-support/register ./dist/lib/tests.js",
     "format": "prettier --write './**/*.{ts,js,json,md}' '.prettierrc'",
     "prepublishOnly": "npm run compile"
   },
   "files": [
-    "target"
+    "dist"
   ],
   "dependencies": {
     "@types/node": "^14.14.16",

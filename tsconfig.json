@@ -6,7 +6,7 @@
         "noUncheckedIndexedAccess": true,
         "noImplicitReturns": true,
         "sourceMap": true,
-        "outDir": "./target/",
+        "outDir": "./dist/lib",
         "rootDir": "./src/",
         "declaration": true
     },
