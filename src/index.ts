@@ -80,7 +80,7 @@ export const replaceQueryInParsedUrl = (newQuery: Update<ParsedUrl['query']>): M
 export const replaceQueryInUrl = pipe(replaceQueryInParsedUrl, mapUrl);
 
 export const addQueryToParsedUrl = (queryToAppend: ParsedUrl['query']): MapParsedUrlFn =>
-    replaceQueryInParsedUrl((existingQuery) => ({ ...existingQuery, ...queryToAppend }));
+    replaceQueryInParsedUrl((prevQuery) => ({ ...prevQuery, ...queryToAppend }));
 
 export const addQueryToUrl = pipe(addQueryToParsedUrl, mapUrl);
 
