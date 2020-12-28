@@ -35,7 +35,6 @@ interface ParsedUrl
 export const urlLens = L.id<ParsedUrl>();
 
 const lensModifyOrSet = <S, A>(sa: L.Lens<S, A>) => (f: A | ((a: A) => A)) =>
-    // TODO: typeof f === 'function' - errors
     f instanceof Function ? pipe(sa, L.modify(f)) : sa.set(f);
 
 const convertNodeUrl = ({
