@@ -128,11 +128,6 @@ path-is-absolute@^1.0.0:
   resolved "https://registry.yarnpkg.com/path-is-absolute/-/path-is-absolute-1.0.1.tgz#174b9268735534ffbc7ace6bf53a5a9e1b5c5f5f"
   integrity sha1-F0uSaHNVNP+8es5r9TpanhtcX18=
 
-pipe-ts@^0.0.9:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/pipe-ts/-/pipe-ts-0.0.9.tgz#9c1c9856348e5eeb1250b4c6d291b776b55556ca"
-  integrity sha512-j5DfveOe0xC4hIK6/FRJ+zHjvrgbMO+kgnM4ZsSQqWZZL8fgCYCAu7TXdkVLavX/2nALm32yBVDixW8+/aYtGA==
-
 prettier@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.2.1.tgz#795a1a78dd52f073da0cd42b21f9c91381923ff5"

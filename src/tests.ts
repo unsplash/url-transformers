@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { pipe, pipeWith } from 'pipe-ts';
+import { flow, pipe } from 'fp-ts/lib/function';
 import * as urlHelpers from 'url';
 import {
     addQueryToUrl,
@@ -16,7 +16,7 @@ import {
 } from './index';
 
 assert.deepEqual(
-    pipeWith(
+    pipe(
         urlHelpers.parse('https://foo.com/bar', true),
         mapParsedUrl((parsedUrl) => ({
             ...parsedUrl,
@@ -29,7 +29,7 @@ assert.deepEqual(
 );
 
 assert.deepEqual(
-    pipeWith(
+    pipe(
         'https://foo.com/bar',
         mapUrl((parsedUrl) => ({
             ...parsedUrl,
@@ -41,10 +41,10 @@ assert.deepEqual(
 );
 
 assert.deepEqual(
-    pipeWith(
+    pipe(
         'https://foo.com/bar',
         mapUrl(
-            pipe(
+            flow(
                 replacePathnameInParsedUrl(() => '/foo'),
                 replaceQueryInParsedUrl(() => ({ a: 'b' })),
             ),
@@ -92,7 +92,7 @@ assert.strictEqual(
 );
 
 assert.strictEqual(
-    pipeWith(
+    pipe(
         'https://foo.com/foo?example',
         mapUrl(
             replacePathInParsedUrl((prev) => ({ pathname: `${prev.pathname}/bar`, query: null })),
@@ -101,7 +101,7 @@ assert.strictEqual(
     'https://foo.com/foo/bar',
 );
 assert.strictEqual(
-    pipeWith(
+    pipe(
         'https://foo.com/foo?example',
         mapUrl(
             replacePathInParsedUrl((prev) => ({
@@ -113,7 +113,7 @@ assert.strictEqual(
     'https://foo.com/foo/bar?example=',
 );
 assert.strictEqual(
-    pipeWith(
+    pipe(
         'https://foo.com/foo?example',
         mapUrl(replacePathInParsedUrl({ pathname: null, query: null })),
     ),
