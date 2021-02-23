@@ -5,10 +5,11 @@ import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
 import { isNonEmptyString } from './helpers/other';
 
 interface NodeUrlObjectWithParsedQuery extends urlHelpers.UrlObject {
-    query: ParsedUrlQueryInput;
+    query?: ParsedUrlQueryInput | null;
 }
 
-type Update<T> = T | ((prev: T) => T);
+type UpdateFn<T> = (prev: T) => T;
+type Update<T> = T | UpdateFn<T>;
 
 const getPathnameFromParts = (parts: string[]) => `/${parts.join('/')}`;
 
@@ -84,27 +85,41 @@ export const addQueryToUrl = pipe(
 type ParsedPath = Pick<ParsedUrl, 'query' | 'pathname'>;
 
 const parsePath = pipe(
-    (path: string) => parseUrlWithQueryString(path),
+    parseUrlWithQueryString,
     ({ query, pathname }): ParsedPath => ({ query, pathname }),
 );
 
-const getParsedPathFromString = (maybePath: NodeUrlObjectWithParsedQuery['path']): ParsedPath =>
+type Path = Required<NodeUrlObjectWithParsedQuery>['path'];
+
+const parseNullablePath = (maybePath: Path): ParsedPath =>
     pipeWith(
         maybePath,
         maybe => mapMaybe(maybe, parsePath),
         maybe => getOrElseMaybe(maybe, () => ({ query: {}, pathname: null })),
     );
 
-export const replacePathInParsedUrl = (
-    newPath: Update<NodeUrlObjectWithParsedQuery['path']>,
-): MapParsedUrlFn => parsedUrl =>
-    pipeWith(
-        newPath instanceof Function ? newPath(parsedUrl.pathname) : newPath,
-        getParsedPathFromString,
-        newPathParsed => ({ ...parsedUrl, ...newPathParsed }),
+const convertUpdatePathFnToUpdateParsedPathFn = (
+    updatePath: UpdateFn<Path>,
+): UpdateFn<ParsedPath> =>
+    pipe(
+        urlHelpers.format,
+        updatePath,
+        parseNullablePath,
     );
 
+const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>) =>
+    newPath instanceof Function
+        ? convertUpdatePathFnToUpdateParsedPathFn(newPath)
+        : parseNullablePath(newPath);
+
+export const replacePathInParsedUrl = (newPath: Update<ParsedPath>): MapParsedUrlFn => parsedUrl =>
+    pipeWith(newPath instanceof Function ? newPath(parsedUrl) : newPath, newPathParsed => ({
+        ...parsedUrl,
+        ...newPathParsed,
+    }));
+
 export const replacePathInUrl = pipe(
+    convertUpdatePathToUpdateParsedPath,
     replacePathInParsedUrl,
     mapUrl,
 );
