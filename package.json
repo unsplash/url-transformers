@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/unsplash/url-transformers.git"
   },
-  "version": "0.0.9",
+  "version": "0.0.10",
   "scripts": {
     "compile": "rm -rf ./dist/ && tsc -p ./tsconfig.json && tsc -p ./tsconfig.es6.json && import-path-rewrite",
     "test": "npm run compile && node --require source-map-support/register ./dist/lib/tests.js",
