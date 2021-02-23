@@ -1,11 +1,13 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
-        "target": "es5",
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "target": "ES5",
         "strict": true,
+        "noUncheckedIndexedAccess": true,
         "noImplicitReturns": true,
         "sourceMap": true,
-        "outDir": "./target/",
+        "outDir": "./dist/lib",
         "rootDir": "./src/",
         "declaration": true
     },
