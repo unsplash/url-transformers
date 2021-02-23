@@ -1,4 +1,5 @@
-import { pipe, pipeWith } from 'pipe-ts';
+import { flow, pipe } from 'fp-ts/lib/function';
+import * as L from 'monocle-ts/lib/Lens';
 import { ParsedUrlQueryInput } from 'querystring';
 import * as urlHelpers from 'url';
 import { getOrElseMaybe, mapMaybe } from './helpers/maybe';
@@ -31,6 +32,11 @@ interface ParsedUrl
         >
     > {}
 
+export const urlLens = L.id<ParsedUrl>();
+
+const lensModifyOrSet = <S, A>(sa: L.Lens<S, A>) => (f: A | ((a: A) => A)) =>
+    f instanceof Function ? pipe(sa, L.modify(f)) : sa.set(f);
+
 const convertNodeUrl = ({
     auth,
     hash,
@@ -51,7 +57,7 @@ const convertNodeUrl = ({
     slashes,
 });
 
-const parseUrl = pipe(parseUrlWithQueryString, convertNodeUrl);
+const parseUrl = flow(parseUrlWithQueryString, convertNodeUrl);
 const formatUrl = (parsedUrl: ParsedUrl) => urlHelpers.format(parsedUrl);
 
 type Codec<A, IO> = {
@@ -68,30 +74,26 @@ type MapParsedUrlFn = (parsedUrl: ParsedUrl) => ParsedUrl;
 export const mapParsedUrl = (fn: MapParsedUrlFn): MapParsedUrlFn => fn;
 
 type MapUrlFn = (url: string) => string;
-export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn => pipe(urlCodec.decode, fn, urlCodec.encode);
+export const mapUrl = (fn: MapParsedUrlFn): MapUrlFn => flow(urlCodec.decode, fn, urlCodec.encode);
 
-export const replaceQueryInParsedUrl = (newQuery: Update<ParsedUrl['query']>): MapParsedUrlFn => (
-    parsedUrl,
-) => ({
-    ...parsedUrl,
-    query: typeof newQuery === 'function' ? newQuery(parsedUrl.query) : newQuery,
-});
+export const queryLens: L.Lens<ParsedUrl, ParsedUrl['query']> = pipe(urlLens, L.prop('query'));
 
-export const replaceQueryInUrl = pipe(replaceQueryInParsedUrl, mapUrl);
+export const replaceQueryInParsedUrl = pipe(queryLens, lensModifyOrSet);
+
+export const replaceQueryInUrl = flow(replaceQueryInParsedUrl, mapUrl);
 
 export const addQueryToParsedUrl = (queryToAppend: ParsedUrl['query']): MapParsedUrlFn =>
     replaceQueryInParsedUrl((prevQuery) => ({ ...prevQuery, ...queryToAppend }));
 
-export const addQueryToUrl = pipe(addQueryToParsedUrl, mapUrl);
+export const addQueryToUrl = flow(addQueryToParsedUrl, mapUrl);
 
 interface ParsedPath extends Pick<ParsedUrl, 'query' | 'pathname'> {}
 
-const parsePath = pipe(
-    parseUrlWithQueryString,
-    ({ query, pathname }): ParsedPath => ({ query, pathname }),
-);
+export const pathLens: L.Lens<ParsedUrl, ParsedPath> = pipe(urlLens, L.props('pathname', 'query'));
 
-const parseNullablePath = pipe(
+const parsePath = flow(parseUrlWithQueryString, pathLens.get);
+
+const parseNullablePath = flow(
     mapMaybe(parsePath),
     getOrElseMaybe((): ParsedPath => ({ query: null, pathname: null })),
 );
@@ -107,38 +109,33 @@ const pathCodec: Codec<ParsedPath, Path> = {
 
 const convertUpdatePathFnToUpdateParsedPathFn = (
     updatePath: UpdateFn<Path>,
-): UpdateFn<ParsedPath> => pipe(pathCodec.encode, updatePath, pathCodec.decode);
+): UpdateFn<ParsedPath> => flow(pathCodec.encode, updatePath, pathCodec.decode);
 
 const convertUpdatePathToUpdateParsedPath = (newPath: Update<Path>): Update<ParsedPath> =>
     typeof newPath === 'function'
         ? convertUpdatePathFnToUpdateParsedPathFn(newPath)
         : parseNullablePath(newPath);
 
-export const replacePathInParsedUrl = (newPath: Update<ParsedPath>): MapParsedUrlFn => (
-    parsedUrl,
-) => ({
-    ...parsedUrl,
-    ...(typeof newPath === 'function' ? newPath(parsedUrl) : newPath),
-});
+export const replacePathInParsedUrl = pipe(pathLens, lensModifyOrSet);
 
-export const replacePathInUrl = pipe(
+export const replacePathInUrl = flow(
     convertUpdatePathToUpdateParsedPath,
     replacePathInParsedUrl,
     mapUrl,
 );
 
-export const replacePathnameInParsedUrl = (
-    newPathname: Update<ParsedUrl['pathname']>,
-): MapParsedUrlFn => (parsedUrl) => ({
-    ...parsedUrl,
-    pathname: typeof newPathname === 'function' ? newPathname(parsedUrl.pathname) : newPathname,
-});
+export const pathnameLens: L.Lens<ParsedUrl, ParsedUrl['pathname']> = pipe(
+    urlLens,
+    L.prop('pathname'),
+);
 
-export const replacePathnameInUrl = pipe(replacePathnameInParsedUrl, mapUrl);
+export const replacePathnameInParsedUrl = pipe(pathnameLens, lensModifyOrSet);
+
+export const replacePathnameInUrl = flow(replacePathnameInParsedUrl, mapUrl);
 
 export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUrlFn =>
     replacePathnameInParsedUrl((prevPathname) => {
-        const pathnameParts = pipeWith(
+        const pathnameParts = pipe(
             prevPathname,
             mapMaybe(getPartsFromPathname),
             getOrElseMaybe((): string[] => []),
@@ -149,13 +146,10 @@ export const appendPathnameToParsedUrl = (pathnameToAppend: string): MapParsedUr
         return newPathname;
     });
 
-export const appendPathnameToUrl = pipe(appendPathnameToParsedUrl, mapUrl);
+export const appendPathnameToUrl = flow(appendPathnameToParsedUrl, mapUrl);
 
-export const replaceHashInParsedUrl = (newHash: Update<ParsedUrl['hash']>): MapParsedUrlFn => (
-    parsedUrl,
-) => ({
-    ...parsedUrl,
-    hash: typeof newHash === 'function' ? newHash(parsedUrl.hash) : newHash,
-});
+export const hashLens: L.Lens<ParsedUrl, ParsedUrl['hash']> = pipe(urlLens, L.prop('hash'));
 
-export const replaceHashInUrl = pipe(replaceHashInParsedUrl, mapUrl);
+export const replaceHashInParsedUrl = pipe(hashLens, lensModifyOrSet);
+
+export const replaceHashInUrl = flow(replaceHashInParsedUrl, mapUrl);

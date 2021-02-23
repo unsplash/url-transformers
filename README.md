@@ -23,6 +23,10 @@ yarn add url-transformers
 npm install url-transformers
 ```
 
+## Dependencies
+
+This project depends on [`monocle-ts`](https://github.com/gcanti/monocle-ts) (lenses library) and [`fp-ts`](https://github.com/gcanti/fp-ts). If tree shaking is used (via the `module` field in `package.json`) these dependencies will have a neglible impact on the bundle size—at the time of writing they only contribute ~500 bytes (gzipped) to the bundle.
+
 ## Development
 
 ```sh
