@@ -1,3 +1,11 @@
+# ⚠️ Archived ⚠️
+
+This library is no longer maintained.
+
+We've migrated to alternatives based atop the native `URL` and `URLSearchParams` APIs.
+
+---
+
 # `url-transformers`
 
 A small helper library for manipulating URL strings in Node and in the browser. `url-transformers` provides several functions for common URL transformations, such as adding a search/query string to a URL or appending to the URL pathname.
